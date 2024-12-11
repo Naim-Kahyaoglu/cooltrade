@@ -104,34 +104,3 @@ footer p {
     grid-template-columns: 1fr 1fr;
   }
 }
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-header, footer {
-  width: 100%;
-}
-
-header .container, footer .container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-  header .container, footer .container {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .logo {
-    margin-bottom: 1rem;
-  }
-}

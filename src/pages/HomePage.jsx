@@ -22,7 +22,7 @@ const HomePage = () => {
       <div className="flex-grow">
         <ProductCard product={product} />
       </div>
-      <Footer />
+      
     </div>
   );
 };
