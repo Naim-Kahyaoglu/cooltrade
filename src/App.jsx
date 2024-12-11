@@ -1,6 +1,7 @@
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import './app.css';  // Burada app.css dosyasını import ettik
 import Header from './layout/Header';
 import Footer from './layout/Footer';
 import HomePage from './pages/HomePage';
