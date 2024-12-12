@@ -1,7 +1,5 @@
-import React from 'react';
 import Slider from '../components/Slider';
 import ProductCard from '../components/ProductCard';
-
 
 const HomePage = () => {
   const images = [
@@ -19,10 +17,10 @@ const HomePage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Slider images={images} />
-      <div className="flex-grow">
+      <div className="flex-grow grid-container">
         <ProductCard product={product} />
+       
       </div>
-      
     </div>
   );
 };

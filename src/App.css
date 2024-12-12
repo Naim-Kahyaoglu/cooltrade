@@ -1,9 +1,34 @@
 /* Global Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.signup-form {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
 }
+
+.signup-form input,
+.signup-form select,
+.signup-form button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.signup-form button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.signup-form button:disabled {
+  background-color: #cccccc;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}
+
 
 /* Body Style */
 body {
@@ -83,11 +108,13 @@ footer p {
 }
 
 /* Grid Layout for Products */
+/* Grid Layout for Products */
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Genişliği artırdık */
   gap: 20px;
 }
+
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {

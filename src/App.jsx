@@ -1,21 +1,23 @@
-// src/App.jsx
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import './App.css';  // Burada app.css dosyasını import ettik
+import { Switch, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import SignupPage from './pages/SignupPage'; 
+import LoginPage from './pages/LoginPage';
 import Header from './layout/Header';
 import Footer from './layout/Footer';
-import HomePage from './pages/HomePage';
 
-function App() {
+const App = () => {
   return (
-    <Router>
+    <div className="flex flex-col min-h-screen">
       <Header />
       <Switch>
         <Route exact path="/" component={HomePage} />
+        <Route path="/signup" component={SignupPage} /> 
+        <Route path="/login" component={LoginPage} /> 
       </Switch>
       <Footer />
-    </Router>
+    </div>
   );
-}
+};
 
 export default App;
+
