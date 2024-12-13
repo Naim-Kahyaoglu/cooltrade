@@ -1,7 +1,9 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 const Header = () => {
+  const user = useSelector((state) => state.user);
   return (
     <header className="bg-[#00A1C1] text-white p-4 w-full">
       <div className="container mx-auto flex flex-col items-center">
@@ -17,6 +19,12 @@ const Header = () => {
           <Link to="/login" className="text-white hover:text-gray-200">Login</Link>
           <Link to="/contact" className="text-white hover:text-gray-200">Contact</Link>
         </nav>
+        {user && (
+          <div className="user-info">
+            <p>Welcome, {user.username}</p>
+            {/* Display other user information here */}
+          </div>
+        )}
       </div>
     </header>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
@@ -26,34 +26,37 @@ const LoginForm = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     setError(null);
-  
     try {
       const response = await axiosInstance.post('/login', data);
-      
+
       console.log('Login Response:', response.data);
-  
+
       // Aktivasyon kontrolü
       if (response.data.activated === false) {
         setError('Account not activated. Please check your email.');
         setLoading(false);
         return;
       }
-  
       const gravatarHash = md5(data.email.toLowerCase().trim());
       const gravatarUrl = `https://www.gravatar.com/avatar/${gravatarHash}`;
-  
+
       const userInfo = {
         ...response.data,
         gravatarUrl
       };
-  
+
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(userInfo));
-  
-      history.push('/');
+
+      // Redirect to the previous page or home page
+      if (history.length > 1) {
+        history.goBack();
+      } else {
+        history.push('/');
+      }
     } catch (error) {
       console.error('Login Error:', error.response);
-  
+
       // Daha detaylı hata mesajları
       const errorMessage = 
         error.response?.data?.message || 
@@ -61,7 +64,7 @@ const LoginForm = () => {
         (error.response?.status === 401 
           ? 'Invalid email or password' 
           : 'Login failed');
-  
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -74,7 +77,7 @@ const LoginForm = () => {
       className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg"
     >
       <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-      
+
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           Email
@@ -97,25 +100,25 @@ const LoginForm = () => {
           </div>
         )}
       </div>
-      
+
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           Password
         </label>
         <div className="relative">
-        <input 
-          type="password" 
-          {...register('password', { 
-            required: 'Password is required',
-            minLength: {
-              value: 6,
-              message: "Password must be at least 6 characters"
-            }
-          })} 
-          placeholder="Enter your password" 
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-        />
-         <button 
+          <input 
+            type={showPassword ? "text" : "password"} 
+            {...register('password', { 
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: "Password must be at least 6 characters"
+              }
+            })} 
+            placeholder="Enter your password" 
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          />
+          <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
@@ -138,7 +141,7 @@ const LoginForm = () => {
         />
         <label className="text-gray-700 text-sm">Remember Me</label>
       </div>
-      
+
       <button 
         type="submit" 
         disabled={loading}
@@ -148,7 +151,7 @@ const LoginForm = () => {
       >
         {loading ? 'Logging in...' : 'Login'}
       </button>
-      
+
       {error && (
         <div className="mt-4 text-red-500 text-center">
           {error}
@@ -165,3 +168,4 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+
