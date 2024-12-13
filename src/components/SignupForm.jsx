@@ -1,37 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Axios instance oluşturma
+const axiosInstance = axios.create({
+  baseURL: 'https://workintech-fe-ecommerce.onrender.com',  // API'nin base URL'si
+  headers: {
+    'Content-Type': 'application/json',  // Gönderilen verinin JSON formatında olduğunu belirtir
+  },
+});
+
 const SignupForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role_id: '',
+    role_id: '',  // Bu alanda başlangıçta boş
     store: {
       name: '',
       phone: '',
       tax_no: '',
-      bank_account: ''
-    }
+      bank_account: '',
+    },
   });
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Rolleri çekmek için useEffect hook'u
   useEffect(() => {
-    // Rolleri çek
     const fetchRoles = async () => {
       try {
-        const response = await axios.get('/roles');
-        setRoles(response.data.roles);
+        const response = await axiosInstance.get('/roles');  // Axios ile /roles endpoint'inden veri çekiliyor
+        console.log('Fetchlenen roller:', response.data);
+        setRoles(response.data);  // Yanıtın tamamını alıyoruz
 
-           if (response.data.roles) { // Check if roles array exists
-          // Find the Customer role
-          const customerRole = response.data.roles.find(role => role.name === 'Customer');
-          if (customerRole) {
-            setFormData(prev => ({ ...prev, role_id: customerRole.id }));
-          }
+        // 'Müşteri' rolünü bulup, formData.role_id'yi bu rolün id'siyle ayarlıyoruz
+        const customerRole = response.data.find(role => role.code === 'customer');
+        console.log('Müşteri rolü:', customerRole);
+        if (customerRole) {
+          setFormData(prev => ({ ...prev, role_id: customerRole.id }));
         }
       } catch (error) {
         console.error('Error fetching roles:', error);
@@ -40,29 +48,34 @@ const SignupForm = () => {
     fetchRoles();
   }, []);
 
+  // Formdaki değişiklikleri handle etme
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log('Change event:', { name, value });  
     if (name.startsWith('store.')) {
       const storeField = name.split('.')[1];
       setFormData(prev => ({
         ...prev,
-        store: { ...prev.store, [storeField]: value }
+        store: { ...prev.store, [storeField]: value },
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
+  // Şifre doğrulama
   const validatePassword = (password) => {
     const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
     return regex.test(password);
   };
 
+  // Form submit işlemi
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    // Şifre doğrulama işlemi
     if (!validatePassword(formData.password)) {
       setError('Password must be at least 8 characters long and include numbers, lowercase, uppercase, and special characters.');
       setLoading(false);
@@ -80,18 +93,20 @@ const SignupForm = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role_id: formData.role_id
+        role_id: formData.role_id,  // Rol ID'sini gönderiyoruz
       };
 
-      if (formData.role_id === 'store_role_id') { // Store rolünün ID'sini buraya yazın
+      // Eğer 'Mağaza' rolü seçildiyse, store bilgilerini de gönderiyoruz
+      if (formData.role_id === 2) { // 'Mağaza' rolünün id'si 2
         dataToSend.store = formData.store;
       }
 
-      const response = await axios.post('/signup', dataToSend);
-      // Başarılı kayıt
+      // Axios ile signup API'ye veri gönderme
+      const response = await axiosInstance.post('/signup', dataToSend);
+
+      // Başarılı kayıt işlemi
       alert('You need to click link in email to activate your account!');
-      // Önceki sayfaya yönlendir
-      window.history.back();
+      window.history.back();  // Kayıttan sonra önceki sayfaya yönlendirme
     } catch (error) {
       setError(error.response?.data?.message || 'An error occurred during signup.');
     } finally {
@@ -100,7 +115,8 @@ const SignupForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}
+      className="flex flex-col space-y-4 w-full max-w-md mx-auto">
       <input
         type="text"
         name="name"
@@ -133,18 +149,21 @@ const SignupForm = () => {
         placeholder="Confirm Password"
         required
       />
+      {console.log('Mevcut form durumu:', formData)}
+      {console.log('Mevcut roller:', roles)}
       <select
         name="role_id"
         value={formData.role_id}
         onChange={handleChange}
         required
       >
+          {console.log('Roller map edilirken:', roles)}
         {roles?.map(role => (
           <option key={role.id} value={role.id}>{role.name}</option>
         ))}
       </select>
 
-      {formData.role_id === 'store_role_id' && ( // Store rolünün ID'sini buraya yazın
+      {formData.role_id === 2 || formData.role_id === '2' ? (  // Eğer 'Mağaza' rolü seçildiyse
         <>
           <input
             type="text"
@@ -183,7 +202,7 @@ const SignupForm = () => {
             required
           />
         </>
-      )}
+      ) : null}
 
       <button type="submit" disabled={loading}>
         {loading ? 'Submitting...' : 'Submit'}
