@@ -15,11 +15,10 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen w-full">
       <Slider images={images} />
-      <div className="flex-grow grid-container">
+      <div className="flex-grow w-full px-4 sm:px-6 lg:px-8"> {/* grid-container sınıfını kaldırdık */}
         <ProductCard product={product} />
-       
       </div>
     </div>
   );

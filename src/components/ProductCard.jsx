@@ -4,7 +4,7 @@ import productImage from '../images/product.avif'; // Import the image
 const ProductCard = ({ product }) => {
   return (
     <div
-      className="bg-white shadow-lg rounded-lg p-4 relative"
+      className="bg-white shadow-lg rounded-lg p-4 relative w-full"
       style={{ backgroundImage: `url(${productImage})`, backgroundSize: 'cover', backgroundPosition: 'center', width: '100%', paddingTop: '56.25%', overflow: 'hidden' }} // Set the background image and maintain the aspect ratio constraint
     >
       <div className="absolute inset-0 flex flex-col justify-end p-4">
