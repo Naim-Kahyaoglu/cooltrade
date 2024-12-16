@@ -6,11 +6,11 @@ const Header = () => {
   const user = useSelector((state) => state.user);
   return (
     <header className="bg-[#00A1C1] text-white p-4 w-full">
-      <div className="container mx-auto flex flex-col items-center">
-        <div className="logo mb-4">
+      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
+        <div className="logo mb-4 md:mb-0">
           <h1 className="text-2xl font-bold">CoolTrade</h1>
         </div>
-        <nav className="flex flex-col items-center space-y-2">
+        <nav className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
           <Link to="/" className="text-white hover:text-gray-200">Home</Link>
           <Link to="/shop" className="text-white hover:text-gray-200">Shop</Link>
           <Link to="/product" className="text-white hover:text-gray-200">Product</Link>
@@ -20,7 +20,7 @@ const Header = () => {
           <Link to="/contact" className="text-white hover:text-gray-200">Contact</Link>
         </nav>
         {user && (
-          <div className="user-info">
+          <div className="user-info mt-4 md:mt-0">
             <p>Welcome, {user.username}</p>
             {/* Display other user information here */}
           </div>
