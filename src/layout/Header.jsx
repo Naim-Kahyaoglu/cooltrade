@@ -1,9 +1,8 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-const Header = () => {
-  const user = useSelector((state) => state.user);
+const Header = ({ user }) => {
   return (
     <header className="bg-[#00A1C1] text-white p-4 w-full">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
@@ -22,7 +21,6 @@ const Header = () => {
         {user && (
           <div className="user-info mt-4 md:mt-0">
             <p>Welcome, {user.username}</p>
-            {/* Display other user information here */}
           </div>
         )}
       </div>
@@ -30,5 +28,8 @@ const Header = () => {
   );
 };
 
-export default Header;
+const mapStateToProps = (state) => ({
+  user: state.user
+});
 
+export default connect(mapStateToProps)(Header);
