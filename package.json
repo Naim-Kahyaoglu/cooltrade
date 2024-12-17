@@ -21,7 +21,7 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^5.3.0",
+    "react-router-dom": "^5.0.0",
     "react-toastify": "^10.0.6",
     "redux": "^5.0.1",
     "redux-logger": "^3.0.6",
