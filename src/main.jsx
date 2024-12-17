@@ -5,11 +5,17 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import store from './store/store';
 import App from './App';
 import './index.css';
-createRoot(document.getElementById('root')).render(
-  <Provider store={store}>
-    <Router>
-      <App />
-    </Router>
-  </Provider>
+
+// Using createRoot API for React 18
+const root = createRoot(document.getElementById('root'));
+
+root.render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <Router>
+        <App />
+      </Router>
+    </Provider>
+  </React.StrictMode>
 );
 
