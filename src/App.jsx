@@ -1,4 +1,4 @@
-import { Switch, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import SignupPage from './pages/SignupPage'; 
 import LoginPage from './pages/LoginPage';
@@ -12,14 +12,14 @@ const App = () => {
   return (
     <div className="flex flex-col w-full min-h-screen">
       <Header />
-      <Switch>
-        <Route exact path="/" component={HomePage} />
-        <Route path="/shop" component={ShopPage} />
-        <Route path="/signup" component={SignupPage} /> 
-        <Route path="/login" component={LoginPage} />
-        <Route path="/product/:id" component={ProductDetailPage} />
-        <Route path="/contact" component={ContactPage} />
-      </Switch>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/shop" element={<ShopPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+      </Routes>
       <Footer />
     </div>
   );

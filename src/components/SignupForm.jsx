@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { signupUser } from '../store/userSlice';
 import axios from 'axios';
 
 // Axios instance oluşturma
@@ -10,6 +13,9 @@ const axiosInstance = axios.create({
 });
 
 const SignupForm = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isLoading, error: reduxError } = useSelector((state) => state.user);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,7 +30,6 @@ const SignupForm = () => {
     },
   });
   const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Rolleri çekmek için useEffect hook'u
@@ -72,45 +77,37 @@ const SignupForm = () => {
   // Form submit işlemi
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
     // Şifre doğrulama işlemi
     if (!validatePassword(formData.password)) {
       setError('Password must be at least 8 characters long and include numbers, lowercase, uppercase, and special characters.');
-      setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match.');
-      setLoading(false);
       return;
     }
 
+    const dataToSend = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      role_id: formData.role_id,  // Rol ID'sini gönderiyoruz
+    };
+
+    // Eğer 'Mağaza' rolü seçildiyse, store bilgilerini de gönderiyoruz
+    if (formData.role_id === 2 || formData.role_id === '2') { // 'Mağaza' rolünün id'si 2
+      dataToSend.store = formData.store;
+    }
+
     try {
-      const dataToSend = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role_id: formData.role_id,  // Rol ID'sini gönderiyoruz
-      };
-
-      // Eğer 'Mağaza' rolü seçildiyse, store bilgilerini de gönderiyoruz
-      if (formData.role_id === 2) { // 'Mağaza' rolünün id'si 2
-        dataToSend.store = formData.store;
-      }
-
-      // Axios ile signup API'ye veri gönderme
-      const response = await axiosInstance.post('/signup', dataToSend);
-
-      // Başarılı kayıt işlemi
+      await dispatch(signupUser(dataToSend)).unwrap();
       alert('You need to click link in email to activate your account!');
-      window.history.back();  // Kayıttan sonra önceki sayfaya yönlendirme
-    } catch (error) {
-      setError(error.response?.data?.message || 'An error occurred during signup.');
-    } finally {
-      setLoading(false);
+      navigate(-1);  // Kayıttan sonra önceki sayfaya yönlendirme
+    } catch (err) {
+      setError(err || 'An error occurred during signup.');
     }
   };
 
@@ -204,15 +201,15 @@ const SignupForm = () => {
         </>
       ) : null}
 
-<button 
+      <button 
         type="submit" 
-        disabled={loading}
+        disabled={isLoading}
         className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 
         transition duration-300 ease-in-out
         disabled:opacity-50 disabled:cursor-not-allowed
         flex items-center justify-center"
       >
-        {loading ? (
+        {isLoading ? (
           <>
             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -224,6 +221,7 @@ const SignupForm = () => {
           'Sign Up'
         )}
       </button>
+      {reduxError && <p style={{ color: 'red' }}>{reduxError}</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </form>
   );

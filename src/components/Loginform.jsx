@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../store/userSlice';
 import axios from 'axios';
 import md5 from 'md5';
 
@@ -13,7 +15,8 @@ const axiosInstance = axios.create({
 });
 
 const LoginForm = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -27,14 +30,10 @@ const LoginForm = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosInstance.post('/login', data);
-
-      console.log('Login Response:', response.data);
-
-      // Activation control
-      if (response.data.activated === false) {
+      const response = await dispatch(loginUser(data)).unwrap();
+      
+      if (response.activated === false) {
         setError('Account not activated. Please check your email.');
-        setLoading(false);
         return;
       }
 
@@ -42,31 +41,19 @@ const LoginForm = () => {
       const gravatarUrl = `https://www.gravatar.com/avatar/${gravatarHash}`;
 
       const userInfo = {
-        ...response.data,
+        ...response,
         gravatarUrl,
       };
 
-      localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(userInfo));
 
-      // Redirect to the previous page or home page
-      if (history.length > 1) {
-        history.goBack();
+      if (navigate.length > 1) {
+        navigate(-1);
       } else {
-        history.push('/');
+        navigate('/');
       }
     } catch (error) {
-      console.error('Login Error:', error.response);
-
-      // More detailed error messages
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        (error.response?.status === 401
-          ? 'Invalid email or password'
-          : 'Login failed');
-
-      setError(errorMessage);
+      setError(error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -171,4 +158,3 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
-
