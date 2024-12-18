@@ -12,7 +12,6 @@ const Header = ({ user }) => {
         <nav className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
           <Link to="/" className="text-white hover:text-gray-200">Home</Link>
           <Link to="/shop" className="text-white hover:text-gray-200">Shop</Link>
-          <Link to="/product" className="text-white hover:text-gray-200">Product</Link>
           <Link to="/pricing" className="text-white hover:text-gray-200">Pricing</Link>
           <Link to="/signup" className="text-white hover:text-gray-200">Signup</Link>
           <Link to="/login" className="text-white hover:text-gray-200">Login</Link>

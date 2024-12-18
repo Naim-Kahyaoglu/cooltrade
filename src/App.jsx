@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage';
 import SignupPage from './pages/SignupPage'; 
 import LoginPage from './pages/LoginPage';
 import ShopPage from './pages/ShopPage'; 
+import ProductDetailPage from './pages/ProductDetailPage';
 import Header from './layout/Header';
 import Footer from './layout/Footer';
 
@@ -14,7 +15,8 @@ const App = () => {
         <Route exact path="/" component={HomePage} />
         <Route path="/shop" component={ShopPage} />
         <Route path="/signup" component={SignupPage} /> 
-        <Route path="/login" component={LoginPage} /> 
+        <Route path="/login" component={LoginPage} />
+        <Route path="/product/:id" component={ProductDetailPage} />
       </Switch>
       <Footer />
     </div>
@@ -22,4 +24,3 @@ const App = () => {
 };
 
 export default App;
-
