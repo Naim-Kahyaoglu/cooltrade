@@ -6,6 +6,7 @@ import ShopPage from './pages/ShopPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import Header from './layout/Header';
 import Footer from './layout/Footer';
+import ContactPage from './pages/ContactPage';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/signup" component={SignupPage} /> 
         <Route path="/login" component={LoginPage} />
         <Route path="/product/:id" component={ProductDetailPage} />
+        <Route path="/contact" component={ContactPage} />
       </Switch>
       <Footer />
     </div>
