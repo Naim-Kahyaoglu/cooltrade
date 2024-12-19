@@ -34,7 +34,7 @@ const Header = ({ user }) => {
         <div className="flex items-center justify-between">
           {/* Brand Name */}
           <Link to="/" className="text-xl font-bold text-gray-800">
-            BrandName
+            Cool Trade
           </Link>
 
           {/* Welcome Message */}

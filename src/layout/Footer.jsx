@@ -15,7 +15,7 @@ const Footer = () => {
     >
       <div className="container mx-auto flex justify-between items-center max-w-screen-xl">
         <div className="logo flex-shrink-0">
-          <h1 className="text-xl font-bold">CoolTrade</h1>
+          <h1 className="text-xl font-bold">Cool Trade</h1>
         </div>
         <div className="flex-grow flex justify-end">
           <p>&copy; 2024 CoolTrade. All rights reserved.</p>
