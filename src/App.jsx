@@ -1,4 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import HomePage from './pages/HomePage';
 import SignupPage from './pages/SignupPage'; 
 import LoginPage from './pages/LoginPage';
@@ -12,6 +14,7 @@ const App = () => {
   return (
     <div className="flex flex-col w-full min-h-screen">
       <Header />
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />

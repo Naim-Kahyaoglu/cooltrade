@@ -1,28 +1,39 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import ProductCard from '../components/ProductCard';
+import { fetchProducts } from '../store/thunks/productThunks';
 import shopPageImage from '../images/shoppage.png';
+import Slider from 'react-slick';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import '../styles/slider.css';
 
 const ShopPage = () => {
-  const products = [
-    {
-      id: 1,
-      name: 'Product 1',
-      description: 'Description for product 1',
-      price: 29.99,
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      description: 'Description for product 2',
-      price: 39.99,
-    },
-    {
-      id: 3,
-      name: 'Product 3',
-      description: 'Description for product 3',
-      price: 49.99,
-    },
-  ];
+  const dispatch = useDispatch();
+  const { productList, fetchState } = useSelector(state => state.product);
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 2,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1
+        }
+      }
+    ]
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -32,16 +43,18 @@ const ShopPage = () => {
         </div>
         <div className="md:w-1/2 md:pl-4 md:pt-4">
           <h4 className="text-lg font-semibold mb-2">Featured Products</h4>
-          <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
+          <h2 className="text-2xl font-bold mb-4">Our Products</h2>
           <p className="mb-8">
-            Problems trying to resolve the conflict between the two major realms of Classical physics: Newtonian mechanics.
+            Discover our amazing collection of products.
           </p>
-          <div className="flex flex-col md:flex-row md:justify-start md:space-x-4">
-            {products.map((product) => (
-              <div key={product.id} className="w-full md:w-1/2">
-                <ProductCard product={product} />
-              </div>
-            ))}
+          <div className="product-slider px-8">
+            <Slider {...settings}>
+              {productList.map((product) => (
+                <div key={product.id} className="px-2">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </Slider>
           </div>
         </div>
       </div>
