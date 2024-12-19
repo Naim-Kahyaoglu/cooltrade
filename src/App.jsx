@@ -6,6 +6,7 @@ import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import ShopPage from './pages/ShopPage'; 
 import ProductDetailPage from './pages/ProductDetailPage';
+import TeamPage from './pages/TeamPage';
 import Header from './layout/Header';
 import Footer from './layout/Footer';
 import ContactPage from './pages/ContactPage';
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/team" element={<TeamPage />} />
         <Route path="/contact" element={<ContactPage />} />
       </Routes>
       <Footer />

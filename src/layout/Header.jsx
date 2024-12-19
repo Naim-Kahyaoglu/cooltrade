@@ -94,6 +94,7 @@ const Header = ({ user }) => {
             <Link to="/" className="text-gray-600 hover:text-gray-800 py-2">Home</Link>
             <Link to="/shop" className="text-gray-600 hover:text-gray-800 py-2">Product</Link>
             <Link to="/pricing" className="text-gray-600 hover:text-gray-800 py-2">Pricing</Link>
+            <Link to="/team" className="text-gray-600 hover:text-gray-800 py-2">Team</Link>
             <Link to="/contact" className="text-gray-600 hover:text-gray-800 py-2">Contact</Link>
           </div>
         </div>
