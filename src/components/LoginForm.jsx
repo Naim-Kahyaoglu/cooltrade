@@ -1,10 +1,25 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../store/userSlice';
 import axios from 'axios';
 import md5 from 'md5';
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Container,
+  FormControlLabel,
+  Checkbox,
+  IconButton,
+  InputAdornment,
+  Alert,
+  CircularProgress,
+  Paper
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 // Axios instance creation
 const axiosInstance = axios.create({
@@ -60,42 +75,34 @@ const LoginForm = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg"
-    >
-      <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+    <Container component="main" maxWidth="xs">
+      <Paper elevation={3} sx={{ p: 4, mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
+          Login
+        </Typography>
 
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
-          Email
-        </label>
-        <input
-          type="email"
-          {...register('email', {
-            required: 'Email is required',
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: 'Invalid email address',
-            },
-          })}
-          placeholder="Enter your email"
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-        />
-        {errors.email && (
-          <div className="text-red-500 text-sm mt-1">
-            {errors.email.message}
-          </div>
-        )}
-      </div>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%' }}>
+          <TextField
+            margin="normal"
+            fullWidth
+            label="Email"
+            type="email"
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Invalid email address',
+              },
+            })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
+          />
 
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
-          Password
-        </label>
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
+          <TextField
+            margin="normal"
+            fullWidth
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
             {...register('password', {
               required: 'Password is required',
               minLength: {
@@ -103,57 +110,67 @@ const LoginForm = () => {
                 message: 'Password must be at least 6 characters',
               },
             })}
-            placeholder="Enter your password"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
+
+          <FormControlLabel
+            control={<Checkbox {...register('rememberMe')} color="primary" />}
+            label="Remember Me"
+            sx={{ mt: 1 }}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={loading}
+            sx={{ mt: 3, mb: 2 }}
           >
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        {errors.password && (
-          <div className="text-red-500 text-sm mt-1">
-            {errors.password.message}
-          </div>
-        )}
-      </div>
+            {loading ? (
+              <>
+                <CircularProgress size={24} sx={{ mr: 1 }} />
+                Logging in...
+              </>
+            ) : (
+              'Login'
+            )}
+          </Button>
 
-      <div className="mb-4 flex items-center">
-        <input
-          type="checkbox"
-          {...register('rememberMe')}
-          className="mr-2"
-        />
-        <label className="text-gray-700 text-sm">Remember Me</label>
-      </div>
+          {error && (
+            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Logging in...' : 'Login'}
-      </button>
-
-      {error && (
-        <div className="mt-4 text-red-500 text-center">
-          {error}
-        </div>
-      )}
-
-      <div className="mt-4 text-center">
-        <a href="/forgot-password" className="text-blue-500 hover:underline">
-          Forgot Password?
-        </a>
-        <span className="mx-2">|</span>
-        <a href="/signup" className="text-blue-500 hover:underline">
-          Don't have an account?
-        </a>
-      </div>
-    </form>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Link to="/forgot-password" style={{ textDecoration: 'none' }}>
+              <Typography color="primary" variant="body2">
+                Forgot Password?
+              </Typography>
+            </Link>
+            <Link to="/signup" style={{ textDecoration: 'none' }}>
+              <Typography color="primary" variant="body2">
+                Don't have an account?
+              </Typography>
+            </Link>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
