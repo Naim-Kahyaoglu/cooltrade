@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
-import { connect, useDispatch } from 'react-redux';
+import React from 'react';
+import { connect } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { logoutUser } from '../store/userSlice';
+import {
+  Box,
+  Typography,
+  AppBar,
+  Toolbar,
+  Button,
+  IconButton
+} from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
-const Header = ({ user }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const dispatch = useDispatch();
+const Header = ({ user, dispatch }) => {
   const navigate = useNavigate();
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   const handleLogout = () => {
     dispatch(logoutUser());
@@ -28,84 +31,77 @@ const Header = ({ user }) => {
   };
 
   return (
-    <header className="bg-white shadow-md">
-      {/* Top Bar */}
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          {/* Brand Name */}
-          <Link to="/" className="text-xl font-bold text-gray-800">
-            Cool Trade
-          </Link>
+    <AppBar position="static" color="default" elevation={1}>
+      <Toolbar>
+        {/* Brand Name */}
+        <Typography
+          variant="h6"
+          component={Link}
+          to="/"
+          sx={{
+            textDecoration: 'none',
+            color: 'inherit',
+            flexGrow: 0,
+            mr: 4
+          }}
+        >
+          Cool Trade
+        </Typography>
 
+        {/* Navigation Links */}
+        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+          <Button
+            color="inherit"
+            component={Link}
+            to="/shop"
+          >
+            Shop
+          </Button>
+          <Button color="inherit" component={Link} to="/about">
+            About
+          </Button>
+          <Button color="inherit" component={Link} to="/contact">
+            Contact
+          </Button>
+        </Box>
+
+        {/* Right Side Icons */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Welcome Message */}
           {user?.user && (
-            <div className="text-gray-600">
+            <Typography variant="body2" sx={{ mr: 2 }}>
               Welcome, {user.user.name}
-            </div>
+            </Typography>
           )}
 
-          {/* Icons */}
-          <div className="flex items-center space-x-4">
-            {/* Login/Logout Link */}
-            {user?.user ? (
-              <button 
-                onClick={handleLogout}
-                className="text-black hover:text-gray-600"
-              >
-                Logout
-              </button>
-            ) : (
-              <Link to="/login" className="text-black hover:text-gray-600">
-                Login
-              </Link>
-            )}
-
-            {/* Search Icon */}
-            <button className="p-2 hover:bg-gray-100 rounded-full text-black">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-
-            {/* Cart Icon */}
-            <button className="p-2 hover:bg-gray-100 rounded-full text-black">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </button>
-
-            {/* Hamburger Menu Button */}
-            <button 
-              className="p-2 hover:bg-gray-100 rounded-full text-black"
-              onClick={toggleMenu}
+          {/* Login/Logout */}
+          {user?.user ? (
+            <Button 
+              color="inherit"
+              onClick={handleLogout}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+              Logout
+            </Button>
+          ) : (
+            <Button 
+              color="inherit"
+              component={Link} 
+              to="/login"
+            >
+              Login
+            </Button>
+          )}
 
-      {/* Navigation Menu - Shows/Hides based on isMenuOpen state */}
-      <nav className={`${isMenuOpen ? 'block' : 'hidden'} border-t`}>
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex flex-col md:flex-row md:items-center md:space-x-6 md:space-y-0 space-y-2">
-            <Link to="/" className="text-gray-600 hover:text-gray-800 py-2">Home</Link>
-            <Link to="/shop" className="text-gray-600 hover:text-gray-800 py-2">Shop</Link>
-            <Link to="/pricing" className="text-gray-600 hover:text-gray-800 py-2">Pricing</Link>
-            <Link to="/about" className="text-gray-600 hover:text-gray-800 py-2">About Us</Link>
-            <Link to="/team" className="text-gray-600 hover:text-gray-800 py-2">Team</Link>
-            <Link to="/contact" className="text-gray-600 hover:text-gray-800 py-2">Contact</Link>
-          </div>
-        </div>
-      </nav>
-    </header>
+          {/* Cart Icon */}
+          <IconButton color="inherit" sx={{ ml: 1 }}>
+            <ShoppingCartIcon />
+          </IconButton>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 
-const mapStateToProps = (state) => ({
+export default connect(state => ({
   user: state.user
-});
-
-export default connect(mapStateToProps)(Header);
+}))(Header);

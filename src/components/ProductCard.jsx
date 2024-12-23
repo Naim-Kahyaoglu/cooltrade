@@ -30,20 +30,22 @@ const ProductCard = ({ product }) => {
   };
 
   const handleAddToCart = (e) => {
-    e.stopPropagation(); // Prevent card click event
+    e.stopPropagation();
     // Add to cart logic here
   };
 
   const handleFavoriteClick = (e) => {
-    e.stopPropagation(); // Prevent card click event
+    e.stopPropagation();
     setIsFavorite(!isFavorite);
     // Add to favorites logic here
   };
 
+  // Get the first image URL from the images array
+  const imageUrl = product.images?.[0]?.url || productImage;
+
   return (
     <Card 
       sx={{ 
-        maxWidth: 345,
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -57,9 +59,9 @@ const ProductCard = ({ product }) => {
       }}
       onClick={handleClick}
     >
-      {product.discount && (
+      {product.discountPercentage > 0 && (
         <Chip
-          label={`${product.discount}% OFF`}
+          label={`${product.discountPercentage}% OFF`}
           color="error"
           sx={{
             position: 'absolute',
@@ -93,7 +95,7 @@ const ProductCard = ({ product }) => {
       <CardMedia
         component="img"
         height="200"
-        image={product.images?.[0]?.url || productImage}
+        image={imageUrl}
         alt={product.name}
         sx={{
           objectFit: 'cover',
@@ -121,10 +123,10 @@ const ProductCard = ({ product }) => {
             value={product.rating || 0} 
             readOnly 
             size="small" 
-            precision={0.5}
+            precision={0.1}
           />
           <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-            ({product.reviewCount || 0})
+            ({product.stock} in stock)
           </Typography>
         </Box>
 
@@ -132,13 +134,13 @@ const ProductCard = ({ product }) => {
           <Typography variant="h6" color="primary" fontWeight="bold">
             ${product.price}
           </Typography>
-          {product.oldPrice && (
+          {product.discountPercentage > 0 && (
             <Typography 
               variant="body2" 
               color="text.secondary" 
               sx={{ textDecoration: 'line-through', ml: 1 }}
             >
-              ${product.oldPrice}
+              ${(product.price * (1 + product.discountPercentage/100)).toFixed(2)}
             </Typography>
           )}
         </Box>

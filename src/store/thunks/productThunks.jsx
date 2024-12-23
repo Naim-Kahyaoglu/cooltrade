@@ -13,21 +13,23 @@ const axiosInstance = axios.create({
   }
 });
 
-export const fetchProducts = () => async (dispatch, getState) => {
+export const fetchProducts = (params = {}) => async (dispatch) => {
   try {
     dispatch(setFetchState(FETCH_STATES.FETCHING));
+
+    // Remove any undefined or null values from params
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value != null)
+    );
     
-    const { limit, offset, filter } = getState().product;
     const response = await axiosInstance.get('/products', {
-      params: {
-        limit,
-        offset,
-        filter
-      }
+      params: cleanParams
     });
 
-    dispatch(setProductList(response.data.products));
-    dispatch(setTotal(response.data.total));
+    const { total, products } = response.data;
+    
+    dispatch(setProductList(products));
+    dispatch(setTotal(total));
     dispatch(setFetchState(FETCH_STATES.FETCHED));
   } catch (error) {
     console.error('Failed to fetch products:', error);
