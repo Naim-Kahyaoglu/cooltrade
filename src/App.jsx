@@ -1,4 +1,7 @@
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { verifyToken, setAuthToken } from './store/userSlice';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import HomePage from './pages/HomePage';
@@ -13,8 +16,21 @@ import Footer from './layout/Footer';
 import ContactPage from './pages/ContactPage';
 
 const App = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Check for token in localStorage
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Set token in axios headers
+      setAuthToken(token);
+      // Verify token
+      dispatch(verifyToken());
+    }
+  }, [dispatch]);
+
   return (
-    <div className="flex flex-col w-full min-h-screen">
+    <>
       <Header />
       <ToastContainer />
       <Routes>
@@ -28,7 +44,7 @@ const App = () => {
         <Route path="/contact" element={<ContactPage />} />
       </Routes>
       <Footer />
-    </div>
+    </>
   );
 };
 

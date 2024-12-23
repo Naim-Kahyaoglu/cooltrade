@@ -3,7 +3,7 @@ import { connect, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { logout } from '../store/userSlice';
+import { logoutUser } from '../store/userSlice';
 
 const Header = ({ user }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,7 +15,7 @@ const Header = ({ user }) => {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     navigate('/');
     toast.success('You logged out successfully!', {
       position: "top-right",
@@ -38,16 +38,16 @@ const Header = ({ user }) => {
           </Link>
 
           {/* Welcome Message */}
-          {user?.userData && (
+          {user?.user && (
             <div className="text-gray-600">
-              Welcome, {user.userData.name}
+              Welcome, {user.user.name}
             </div>
           )}
 
           {/* Icons */}
           <div className="flex items-center space-x-4">
             {/* Login/Logout Link */}
-            {user?.userData ? (
+            {user?.user ? (
               <button 
                 onClick={handleLogout}
                 className="text-black hover:text-gray-600"

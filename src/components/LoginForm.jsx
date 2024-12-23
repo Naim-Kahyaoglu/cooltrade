@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../store/userSlice';
-import axios from 'axios';
-import md5 from 'md5';
 import {
   TextField,
   Button,
@@ -21,20 +19,12 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
-// Axios instance creation
-const axiosInstance = axios.create({
-  baseURL: 'https://workintech-fe-ecommerce.onrender.com',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
 const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { isLoading, error } = useSelector((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
+  
   const {
     register,
     handleSubmit,
@@ -42,35 +32,17 @@ const LoginForm = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    setLoading(true);
-    setError(null);
     try {
-      const response = await dispatch(loginUser(data)).unwrap();
+      await dispatch(loginUser({
+        email: data.email,
+        password: data.password,
+        rememberMe: data.rememberMe
+      })).unwrap();
       
-      if (response.activated === false) {
-        setError('Account not activated. Please check your email.');
-        return;
-      }
-
-      const gravatarHash = md5(data.email.toLowerCase().trim());
-      const gravatarUrl = `https://www.gravatar.com/avatar/${gravatarHash}`;
-
-      const userInfo = {
-        ...response,
-        gravatarUrl,
-      };
-
-      localStorage.setItem('user', JSON.stringify(userInfo));
-
-      if (navigate.length > 1) {
-        navigate(-1);
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } catch (error) {
-      setError(error || 'Login failed');
-    } finally {
-      setLoading(false);
+      // Error is handled by the reducer
+      console.error('Login failed:', error);
     }
   };
 
@@ -137,10 +109,10 @@ const LoginForm = () => {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={loading}
+            disabled={isLoading}
             sx={{ mt: 3, mb: 2 }}
           >
-            {loading ? (
+            {isLoading ? (
               <>
                 <CircularProgress size={24} sx={{ mr: 1 }} />
                 Logging in...
