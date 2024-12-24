@@ -36,7 +36,8 @@ import {
   CardContent,
   Rating,
   Alert,
-  Chip
+  Chip,
+  Divider
 } from '@mui/material';
 import {
   FilterList as FilterIcon,
@@ -50,7 +51,8 @@ const ShopPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { productList, total, fetchState } = useSelector(state => state.product);
-  const { categories, topCategories, isLoading: categoriesLoading } = useSelector(state => state.categories);
+  const { categories, topCategories, isLoading: categoriesLoading } = useSelector(state => state.category);
+  const cart = useSelector(state => state.shoppingCart.cart);
   const { gender, categoryName, categoryId } = useParams();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -358,6 +360,12 @@ const ShopPage = () => {
 
   // Calculate total pages
   const totalPages = Math.ceil(total / itemsPerPage);
+
+  // Calculate cart totals
+  const cartSubtotal = cart.reduce((sum, item) => sum + (item.product.price * item.count), 0);
+  const shippingCost = cart.length > 0 ? 29.99 : 0;
+  const discount = cart.length > 0 ? 29.99 : 0;
+  const grandTotal = cartSubtotal + shippingCost - discount;
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -738,39 +746,130 @@ const ShopPage = () => {
               {fetchState === FETCH_STATES.FETCHED && (
                 <>
                   <Grid container spacing={3}>
-                    {productList.map((product) => (
-                      <Grid item xs={12} sm={6} lg={4} key={product.id}>
-                        <ProductCard 
-                          product={product}
-                          gender={gender}
-                          categoryName={categoryName}
-                          categoryId={categoryId}
-                        />
+                    {/* Products List */}
+                    <Grid item xs={12} md={8}>
+                      <Grid container spacing={3}>
+                        {productList.map((product) => (
+                          <Grid item xs={12} sm={6} lg={6} key={product.id}>
+                            <ProductCard 
+                              product={product}
+                              gender={gender}
+                              categoryName={categoryName}
+                              categoryId={categoryId}
+                            />
+                          </Grid>
+                        ))}
                       </Grid>
-                    ))}
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                          <Pagination
+                            count={totalPages}
+                            page={page}
+                            onChange={handlePageChange}
+                            color="primary"
+                            size="large"
+                            showFirstButton
+                            showLastButton
+                          />
+                        </Box>
+                      )}
+
+                      {/* Products Count Info */}
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Showing {((page - 1) * itemsPerPage) + 1} - {Math.min(page * itemsPerPage, total)} of {total} products
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    {/* Order Summary */}
+                    <Grid item xs={12} md={4}>
+                      <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
+                        <Typography variant="h6" gutterBottom>
+                          Order Summary
+                        </Typography>
+                        
+                        {cart.length === 0 ? (
+                          <Box sx={{ textAlign: 'center', py: 3 }}>
+                            <Typography variant="body1" color="text.secondary" gutterBottom>
+                              Your cart is empty
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              Add some products to your cart to see the order summary
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <>
+                            <Box sx={{ my: 2 }}>
+                              {/* Cart Items */}
+                              <List disablePadding>
+                                {cart.map((item) => (
+                                  <ListItem key={item.product.id} disablePadding sx={{ py: 1 }}>
+                                    <ListItemText
+                                      primary={item.product.name}
+                                      secondary={`Quantity: ${item.count}`}
+                                    />
+                                    <Typography variant="body2">
+                                      ${(item.product.price * item.count).toFixed(2)}
+                                    </Typography>
+                                  </ListItem>
+                                ))}
+                              </List>
+
+                              <Divider sx={{ my: 2 }} />
+
+                              {/* Products Total */}
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body1">Products Total</Typography>
+                                <Typography variant="body1">
+                                  ${cartSubtotal.toFixed(2)}
+                                </Typography>
+                              </Box>
+                              
+                              {/* Shipping */}
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body1">Shipping</Typography>
+                                <Typography variant="body1">${shippingCost.toFixed(2)}</Typography>
+                              </Box>
+                              
+                              {/* Discount */}
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body1">Discount</Typography>
+                                <Typography variant="body1" color="error.main">
+                                  -${discount.toFixed(2)}
+                                </Typography>
+                              </Box>
+                              
+                              <Divider sx={{ my: 2 }} />
+                              
+                              {/* Grand Total */}
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                <Typography variant="h6">Grand Total</Typography>
+                                <Typography variant="h6" color="primary.main">
+                                  ${grandTotal.toFixed(2)}
+                                </Typography>
+                              </Box>
+                            </Box>
+
+                            {/* Create Order Button */}
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              fullWidth
+                              size="large"
+                              onClick={() => {
+                                navigate('/checkout');
+                              }}
+                            >
+                              Create Order
+                            </Button>
+                          </>
+                        )}
+                      </Paper>
+                    </Grid>
                   </Grid>
-
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                      <Pagination
-                        count={totalPages}
-                        page={page}
-                        onChange={handlePageChange}
-                        color="primary"
-                        size="large"
-                        showFirstButton
-                        showLastButton
-                      />
-                    </Box>
-                  )}
-
-                  {/* Products Count Info */}
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Showing {((page - 1) * itemsPerPage) + 1} - {Math.min(page * itemsPerPage, total)} of {total} products
-                    </Typography>
-                  </Box>
                 </>
               )}
             </Grid>
