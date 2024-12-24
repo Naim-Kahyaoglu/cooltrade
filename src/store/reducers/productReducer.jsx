@@ -1,6 +1,7 @@
 // Action Types
 export const SET_CATEGORIES = 'SET_CATEGORIES';
 export const SET_PRODUCT_LIST = 'SET_PRODUCT_LIST';
+export const SET_PRODUCT = 'SET_PRODUCT';
 export const SET_TOTAL = 'SET_TOTAL';
 export const SET_FETCH_STATE = 'SET_FETCH_STATE';
 export const SET_LIMIT = 'SET_LIMIT';
@@ -19,6 +20,7 @@ export const FETCH_STATES = {
 const initialState = {
   categories: [],
   productList: [],
+  product: null,  // Single product details
   total: 0,
   limit: 25,
   offset: 0,
@@ -33,6 +35,8 @@ const productReducer = (state = initialState, action) => {
       return { ...state, categories: action.payload };
     case SET_PRODUCT_LIST:
       return { ...state, productList: action.payload };
+    case SET_PRODUCT:
+      return { ...state, product: action.payload };
     case SET_TOTAL:
       return { ...state, total: action.payload };
     case SET_FETCH_STATE:
@@ -57,6 +61,11 @@ export const setCategories = (categories) => ({
 export const setProductList = (products) => ({
   type: SET_PRODUCT_LIST,
   payload: products
+});
+
+export const setProduct = (product) => ({
+  type: SET_PRODUCT,
+  payload: product
 });
 
 export const setTotal = (total) => ({

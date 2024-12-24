@@ -4,15 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { logoutUser } from '../store/userSlice';
+import CartDropdown from '../components/CartDropdown';
 import {
   Box,
   Typography,
   AppBar,
   Toolbar,
   Button,
-  IconButton
 } from '@mui/material';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const Header = ({ user, dispatch }) => {
   const navigate = useNavigate();
@@ -58,7 +57,7 @@ const Header = ({ user, dispatch }) => {
             Shop
           </Button>
           <Button color="inherit" component={Link} to="/about">
-            About
+            About Us
           </Button>
           <Button color="inherit" component={Link} to="/contact">
             Contact
@@ -92,10 +91,8 @@ const Header = ({ user, dispatch }) => {
             </Button>
           )}
 
-          {/* Cart Icon */}
-          <IconButton color="inherit" sx={{ ml: 1 }}>
-            <ShoppingCartIcon />
-          </IconButton>
+          {/* Cart Dropdown */}
+          <CartDropdown />
         </Box>
       </Toolbar>
     </AppBar>

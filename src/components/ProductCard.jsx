@@ -18,26 +18,53 @@ import {
   Favorite as FavoriteIcon,
   FavoriteBorder as FavoriteBorderIcon
 } from '@mui/icons-material';
-import productImage from '../images/productcard.avif';
+import { addToCart } from '../store/reducers/shoppingCartReducer';
+import { toast } from 'react-hot-toast';
 
-const ProductCard = ({ product }) => {
+// Default product image
+const productImage = 'https://via.placeholder.com/300x200';
+
+const ProductCard = ({ product, gender, categoryName, categoryId }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isFavorite, setIsFavorite] = React.useState(false);
 
   const handleClick = () => {
-    navigate(`/product/${product.id}`);
+    // Create URL-friendly slug from product name
+    const slug = product.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-')         // Replace spaces with hyphens
+      .replace(/-+/g, '-');         // Remove consecutive hyphens
+
+    // If we don't have category info, just navigate to the product with defaults
+    if (!gender || !categoryName || !categoryId) {
+      const defaultGender = 'kadin';  // Default gender
+      const defaultCategory = 'genel'; // Default category name
+      const defaultCategoryId = '1';   // Default category ID
+      navigate(`/shop/${defaultGender}/${defaultCategory}/${defaultCategoryId}/${slug}/${product.id}`);
+      return;
+    }
+
+    navigate(`/shop/${gender}/${categoryName}/${categoryId}/${slug}/${product.id}`);
   };
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    // Add to cart logic here
+    dispatch(addToCart(product));
+    toast.success('Added to cart!', {
+      position: "bottom-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   };
 
   const handleFavoriteClick = (e) => {
     e.stopPropagation();
     setIsFavorite(!isFavorite);
-    // Add to favorites logic here
   };
 
   // Get the first image URL from the images array
@@ -50,12 +77,12 @@ const ProductCard = ({ product }) => {
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        transition: 'transform 0.3s ease-in-out',
+        transition: 'all 0.3s ease-in-out',
+        cursor: 'pointer',
         '&:hover': {
-          transform: 'scale(1.03)',
-          boxShadow: 6,
+          transform: 'translateY(-8px)',
+          boxShadow: (theme) => theme.shadows[8],
         },
-        cursor: 'pointer'
       }}
       onClick={handleClick}
     >
@@ -71,96 +98,62 @@ const ProductCard = ({ product }) => {
           }}
         />
       )}
-      
-      <IconButton
-        sx={{
-          position: 'absolute',
-          top: 10,
-          left: 10,
-          zIndex: 1,
-          bgcolor: 'background.paper',
-          '&:hover': {
-            bgcolor: 'background.paper',
-          }
-        }}
-        onClick={handleFavoriteClick}
-      >
-        {isFavorite ? (
-          <FavoriteIcon color="error" />
-        ) : (
-          <FavoriteBorderIcon />
-        )}
-      </IconButton>
-
       <CardMedia
         component="img"
         height="200"
         image={imageUrl}
         alt={product.name}
-        sx={{
-          objectFit: 'cover',
-          height: 200
-        }}
+        sx={{ objectFit: 'cover' }}
       />
-
-      <CardContent sx={{ flexGrow: 1, pb: 0 }}>
-        <Typography gutterBottom variant="h6" component="div" noWrap>
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Typography gutterBottom variant="h6" component="div">
           {product.name}
         </Typography>
-        
-        <Typography variant="body2" color="text.secondary" sx={{
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          mb: 1
-        }}>
-          {product.description}
-        </Typography>
-
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Rating 
-            value={product.rating || 0} 
-            readOnly 
-            size="small" 
-            precision={0.1}
-          />
+          <Rating value={product.rating || 0} readOnly precision={0.5} size="small" />
           <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-            ({product.stock} in stock)
+            ({product.ratingCount || 0})
           </Typography>
         </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6" color="primary" fontWeight="bold">
+        <Typography variant="body2" color="text.secondary">
+          {product.description}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             ${product.price}
           </Typography>
           {product.discountPercentage > 0 && (
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
+            <Typography
+              variant="body2"
+              color="text.secondary"
               sx={{ textDecoration: 'line-through', ml: 1 }}
             >
-              ${(product.price * (1 + product.discountPercentage/100)).toFixed(2)}
+              ${(product.price / (1 - product.discountPercentage / 100)).toFixed(2)}
             </Typography>
           )}
         </Box>
       </CardContent>
-
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button 
-          variant="contained" 
-          fullWidth 
+      <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+        <Button
+          variant="contained"
           startIcon={<ShoppingCartIcon />}
           onClick={handleAddToCart}
-          sx={{
-            bgcolor: 'primary.main',
-            '&:hover': {
-              bgcolor: 'primary.dark',
-            }
-          }}
+          sx={{ flexGrow: 1, mr: 1 }}
         >
           Add to Cart
         </Button>
+        <IconButton 
+          onClick={handleFavoriteClick}
+          sx={{ 
+            border: 1, 
+            borderColor: 'divider',
+            '&:hover': {
+              backgroundColor: 'action.hover',
+            },
+          }}
+        >
+          {isFavorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+        </IconButton>
       </CardActions>
     </Card>
   );

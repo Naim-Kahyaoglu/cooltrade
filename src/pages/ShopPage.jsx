@@ -166,16 +166,99 @@ const ShopPage = () => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Group categories by gender
+  // Group categories by gender and filter out empty categories
   const groupedCategories = categories?.reduce((acc, category) => {
-    const gender = category.gender === 'k' ? 'kadin' : 'erkek';
-    const type = category.code.split(':')[1];
+    // Map gender codes to display values
+    const getGender = (code) => {
+      switch(code) {
+        case 'k': return 'kadin';
+        case 'e': return 'erkek';
+        case 'E': return 'erkek';
+        case 'm': return 'erkek';
+        case 'M': return 'erkek';
+        case 'ç': return 'cocuk';
+        case 'c': return 'cocuk';
+        default: return code;
+      }
+    };
+
+    const gender = getGender(category.gender);
+    const type = category.code?.split(':')[1] || '';
+
+    // Skip invalid categories
+    if (!type || !category.title) {
+      return acc;
+    }
+
     if (!acc[gender]) {
       acc[gender] = [];
     }
-    acc[gender].push({ ...category, type });
+
+    // Convert Turkish characters to their non-accented equivalents
+    const normalizeText = (text) => {
+      return text
+        .replace(/İ/g, 'I')
+        .replace(/ı/g, 'i')
+        .replace(/Ş/g, 'S')
+        .replace(/ş/g, 's')
+        .replace(/Ğ/g, 'G')
+        .replace(/ğ/g, 'g')
+        .replace(/Ü/g, 'U')
+        .replace(/ü/g, 'u')
+        .replace(/Ö/g, 'O')
+        .replace(/ö/g, 'o')
+        .replace(/Ç/g, 'C')
+        .replace(/ç/g, 'c');
+    };
+
+    // Format the title properly
+    const formatTitle = (title) => {
+      // First normalize to handle Turkish characters
+      const normalizedTitle = normalizeText(title.toLowerCase());
+      // Then capitalize first letter
+      return normalizedTitle.charAt(0).toUpperCase() + normalizedTitle.slice(1);
+    };
+
+    acc[gender].push({ 
+      ...category, 
+      type,
+      title: formatTitle(category.title)
+    });
     return acc;
   }, {}) || {};
+
+  // Helper function to get display name for gender
+  const getGenderDisplayName = (gender) => {
+    switch(gender) {
+      case 'kadin': return 'Kadın';
+      case 'erkek': return 'Erkek';
+      case 'cocuk': return 'Çocuk';
+      default: return gender;
+    }
+  };
+
+  // Update the top categories section gender mapping
+  const getGenderFromCode = (code) => {
+    switch(code) {
+      case 'k': return 'kadin';
+      case 'e': return 'erkek';
+      case 'E': return 'erkek';
+      case 'm': return 'erkek';
+      case 'M': return 'erkek';
+      case 'ç': return 'cocuk';
+      case 'c': return 'cocuk';
+      default: return code;
+    }
+  };
+
+  // Update the top categories mapping
+  const filteredTopCategories = topCategories
+    .filter(category => category.code?.split(':')[1] && category.title)
+    .map(category => ({
+      ...category,
+      gender: getGenderFromCode(category.gender),
+      title: category.title.charAt(0).toUpperCase() + category.title.slice(1).toLowerCase()
+    }));
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -293,7 +376,7 @@ const ShopPage = () => {
         </Typography>
         <Grid container spacing={3}>
           {Object.entries(groupedCategories).map(([gender, categories]) => (
-            <Grid item xs={12} md={6} key={gender}>
+            <Grid item xs={12} md={4} key={gender}>
               <Paper sx={{ p: 3 }}>
                 <Typography 
                   variant="h6" 
@@ -304,7 +387,7 @@ const ShopPage = () => {
                     color: 'text.primary'
                   }}
                 >
-                  {gender === 'kadin' ? 'Kadın' : 'Erkek'}
+                  {getGenderDisplayName(gender)}
                 </Typography>
                 <Grid container spacing={2}>
                   {categories.map((category) => (
@@ -332,7 +415,15 @@ const ShopPage = () => {
                           <Typography variant="h6" component="div">
                             {category.title}
                           </Typography>
-                          <Rating value={category.rating || 0} readOnly precision={0.1} size="small" />
+                          <Typography variant="body2" color="text.secondary">
+                            {getGenderDisplayName(gender)}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Rating value={category.rating || 0} readOnly precision={0.1} size="small" />
+                            <Typography variant="body2" color="text.secondary">
+                              {category.product_count} products
+                            </Typography>
+                          </Box>
                         </CardContent>
                       </Card>
                     </Grid>
@@ -364,37 +455,60 @@ const ShopPage = () => {
                 <CircularProgress />
               </Box>
             ) : (
-              topCategories.map((category) => (
-                <Grid item xs={12} sm={6} md={2.4} key={category.id}>
-                  <Card 
-                    component={Link}
-                    to={`/shop/${category.gender === 'k' ? 'kadin' : 'erkek'}/${category.code.split(':')[1]}/${category.id}`}
-                    sx={{ 
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'transform 0.3s ease-in-out',
-                      textDecoration: 'none',
-                      '&:hover': {
-                        transform: 'scale(1.05)',
-                      },
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="140"
-                      image={category.img || shopPageImage}
-                      alt={category.title}
-                    />
-                    <CardContent>
-                      <Typography gutterBottom variant="h6" component="div">
-                        {category.title}
-                      </Typography>
-                      <Rating value={category.rating || 0} readOnly precision={0.1} />
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))
+              filteredTopCategories.map((category) => {
+                const gender = (() => {
+                  switch(category.gender) {
+                    case 'k': return 'kadin';
+                    case 'e': return 'erkek';
+                    case 'E': return 'erkek';
+                    case 'm': return 'erkek';
+                    case 'M': return 'erkek';
+                    case 'ç': return 'cocuk';
+                    case 'c': return 'cocuk';
+                    default: return category.gender;
+                  }
+                })();
+                const type = category.code.split(':')[1];
+                return (
+                  <Grid item xs={12} sm={6} md={2.4} key={category.id}>
+                    <Card 
+                      component={Link}
+                      to={`/shop/${gender}/${type}/${category.id}`}
+                      sx={{ 
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.3s ease-in-out',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          transform: 'scale(1.05)',
+                        },
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        height="140"
+                        image={category.img || shopPageImage}
+                        alt={category.title}
+                      />
+                      <CardContent>
+                        <Typography gutterBottom variant="h6" component="div">
+                          {category.title.charAt(0).toUpperCase() + category.title.slice(1).toLowerCase()}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {getGenderDisplayName(gender)}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Rating value={category.rating || 0} readOnly precision={0.1} />
+                          <Typography variant="body2" color="text.secondary">
+                            {category.product_count} products
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                );
+              })
             )}
           </Grid>
         </Box>
@@ -479,7 +593,7 @@ const ShopPage = () => {
                     {Object.entries(groupedCategories).map(([gender, categories]) => (
                       <Box key={gender}>
                         <Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5, color: 'text.secondary' }}>
-                          {gender === 'kadin' ? 'Kadın' : 'Erkek'}
+                          {getGenderDisplayName(gender)}
                         </Typography>
                         {categories.map((category) => (
                           <FormControlLabel
@@ -626,7 +740,12 @@ const ShopPage = () => {
                   <Grid container spacing={3}>
                     {productList.map((product) => (
                       <Grid item xs={12} sm={6} lg={4} key={product.id}>
-                        <ProductCard product={product} />
+                        <ProductCard 
+                          product={product}
+                          gender={gender}
+                          categoryName={categoryName}
+                          categoryId={categoryId}
+                        />
                       </Grid>
                     ))}
                   </Grid>

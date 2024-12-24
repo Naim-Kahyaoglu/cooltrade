@@ -3,6 +3,7 @@ import {
   setProductList, 
   setFetchState, 
   setTotal,
+  setProduct,
   FETCH_STATES 
 } from '../reducers/productReducer';
 
@@ -33,6 +34,20 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
     dispatch(setFetchState(FETCH_STATES.FETCHED));
   } catch (error) {
     console.error('Failed to fetch products:', error);
+    dispatch(setFetchState(FETCH_STATES.FAILED));
+  }
+};
+
+export const fetchProduct = (productId) => async (dispatch) => {
+  try {
+    dispatch(setFetchState(FETCH_STATES.FETCHING));
+    
+    const response = await axiosInstance.get(`/products/${productId}`);
+    
+    dispatch(setProduct(response.data));
+    dispatch(setFetchState(FETCH_STATES.FETCHED));
+  } catch (error) {
+    console.error('Failed to fetch product:', error);
     dispatch(setFetchState(FETCH_STATES.FAILED));
   }
 };
