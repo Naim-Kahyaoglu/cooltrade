@@ -62,6 +62,9 @@ const Header = ({ user, dispatch }) => {
           <Button color="inherit" component={Link} to="/contact">
             Contact
           </Button>
+          <Button color="inherit" component={Link} to="/team">
+            Team
+          </Button>
         </Box>
 
         {/* Right Side Icons */}
