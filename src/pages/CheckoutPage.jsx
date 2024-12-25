@@ -26,6 +26,8 @@ import {
 import { Add as AddIcon, Security as SecurityIcon } from '@mui/icons-material';
 import { toggleAddressForm } from '../store/addressSlice';
 import AddressForm from '../components/AddressForm';
+import bonusCardLogo from '../images/bonuscard.jpeg';
+import vakifbankCardLogo from '../images/vakıfbankcard.jpeg';
 
 // Mock saved cards
 const savedCards = [
@@ -35,7 +37,7 @@ const savedCards = [
     number: '5556 60** **** 6885',
     expiry: '8/2030',
     type: 'Bonus',
-    logo: '/images/bonus.png'
+    logo: bonusCardLogo
   },
   {
     id: 'vakifbank1',
@@ -43,7 +45,7 @@ const savedCards = [
     number: '5421 19** **** 5420',
     expiry: '3/2025',
     type: 'Vakıfbank',
-    logo: '/images/vakifbank.png'
+    logo: vakifbankCardLogo
   },
   {
     id: 'vakifbank2',
@@ -51,7 +53,7 @@ const savedCards = [
     number: '5428 04** **** 2736',
     expiry: '6/2024',
     type: 'Vakıfbank',
-    logo: '/images/vakifbank.png'
+    logo: vakifbankCardLogo
   }
 ];
 
