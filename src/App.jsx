@@ -10,6 +10,7 @@ import SignupPage from './pages/SignupPage';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
 import CheckoutPage from './pages/CheckoutPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -24,7 +25,14 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/about" element={<AboutUsPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route 
+          path="/checkout" 
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
       <Toaster position="bottom-right" />
     </div>

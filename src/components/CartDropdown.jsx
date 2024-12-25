@@ -9,6 +9,7 @@ import {
   ListItem,
   ListItemText,
   ListItemAvatar,
+  ListItemSecondaryAction,
   Avatar,
   IconButton,
   Button,
@@ -61,6 +62,37 @@ const CartDropdown = () => {
   const open = Boolean(anchorEl);
   const id = open ? 'cart-popover' : undefined;
 
+  const renderSecondaryContent = (item) => (
+    <Box component="span" sx={{ display: 'block' }}>
+      <Typography component="span" variant="body2" display="block">
+        ${item.product.price}
+      </Typography>
+      <Box component="span" sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+        <IconButton 
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleQuantityChange(item.product.id, item.count, -1);
+          }}
+        >
+          <RemoveIcon fontSize="small" />
+        </IconButton>
+        <Typography component="span" variant="body2" sx={{ mx: 1 }}>
+          {item.count}
+        </Typography>
+        <IconButton 
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleQuantityChange(item.product.id, item.count, 1);
+          }}
+        >
+          <AddIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    </Box>
+  );
+
   return (
     <>
       <IconButton 
@@ -99,46 +131,26 @@ const CartDropdown = () => {
                 <List>
                   {cart.map((item) => (
                     <React.Fragment key={item.product.id}>
-                      <ListItem
-                        secondaryAction={
+                      <ListItem>
+                        <ListItemAvatar>
+                          <Avatar src={item.product.images?.[0]?.url} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Typography component="span">
+                              {item.product.name}
+                            </Typography>
+                          }
+                          secondary={renderSecondaryContent(item)}
+                        />
+                        <ListItemSecondaryAction>
                           <IconButton 
                             edge="end" 
                             onClick={() => handleRemove(item.product.id)}
                           >
                             <DeleteIcon />
                           </IconButton>
-                        }
-                      >
-                        <ListItemAvatar>
-                          <Avatar src={item.product.images?.[0]?.url} />
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={item.product.name}
-                          secondary={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography variant="body2">
-                                ${item.product.price}
-                              </Typography>
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <IconButton 
-                                  size="small"
-                                  onClick={() => handleQuantityChange(item.product.id, item.count, -1)}
-                                >
-                                  <RemoveIcon fontSize="small" />
-                                </IconButton>
-                                <Typography sx={{ mx: 1 }}>
-                                  {item.count}
-                                </Typography>
-                                <IconButton 
-                                  size="small"
-                                  onClick={() => handleQuantityChange(item.product.id, item.count, 1)}
-                                >
-                                  <AddIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            </Box>
-                          }
-                        />
+                        </ListItemSecondaryAction>
                       </ListItem>
                       <Divider />
                     </React.Fragment>
@@ -146,7 +158,7 @@ const CartDropdown = () => {
                 </List>
 
                 <Box sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                  <Typography component="div" variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                     Total: ${totalPrice.toFixed(2)}
                   </Typography>
                   <Button
