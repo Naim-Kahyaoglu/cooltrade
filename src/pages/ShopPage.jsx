@@ -14,7 +14,12 @@ import ProductSection from '../components/shop/ProductSection';
 // Redux actions and selectors
 import { fetchCategories, fetchProducts } from '../store/thunks/productThunks';
 import { addToCart } from '../store/reducers/shoppingCartReducer';
-import { selectCategories, selectProducts, selectTotalPages } from '../store/productSlice';
+import { 
+  selectCategories, 
+  selectProducts, 
+  selectTotalPages,
+  clearProducts 
+} from '../store/productSlice.js';
 import { selectCartItems, selectCartTotal } from '../store/reducers/shoppingCartReducer';
 
 // Constants and utils
@@ -97,6 +102,8 @@ const ShopPage = () => {
   };
 
   const handleFilterChange = (type, value) => {
+    dispatch(clearProducts());
+    
     setFilters(prev => {
       const newFilters = { ...prev, page: 1 };
 
@@ -174,7 +181,10 @@ const ShopPage = () => {
         top: 0,
         bgcolor: 'background.paper',
         zIndex: 900,
-        py: 1
+        py: 1,
+        px: 1,
+        borderBottom: '1px solid',
+        borderColor: 'grey.200'
       }}>
         <Button 
           variant="outlined" 
@@ -184,13 +194,34 @@ const ShopPage = () => {
             borderColor: 'grey.300',
             color: 'text.primary',
             '&:hover': {
-              borderColor: 'grey.400'
+              borderColor: 'grey.400',
+              bgcolor: 'grey.50'
             },
-            height: '40px'
+            height: '44px',
+            borderRadius: 2,
+            textTransform: 'none',
+            fontSize: '0.9rem'
           }}
-          startIcon={<FilterList />}
+          startIcon={<FilterList sx={{ fontSize: '1.25rem' }} />}
         >
-          Filtrele
+          {filters.selectedRatings.length > 0 || filters.selectedColors.length > 0 || 
+           filters.priceRange[0] !== PRICE_RANGE.min || filters.priceRange[1] !== PRICE_RANGE.max ? (
+            <Box component="span" sx={{ 
+              bgcolor: 'primary.main',
+              color: 'white',
+              width: 20,
+              height: 20,
+              borderRadius: '50%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.75rem',
+              ml: 1
+            }}>
+              {filters.selectedRatings.length + filters.selectedColors.length + 
+               (filters.priceRange[0] !== PRICE_RANGE.min || filters.priceRange[1] !== PRICE_RANGE.max ? 1 : 0)}
+            </Box>
+          ) : 'Filtrele'}
         </Button>
         <Button 
           variant="outlined"
@@ -200,13 +231,22 @@ const ShopPage = () => {
             borderColor: 'grey.300',
             color: 'text.primary',
             '&:hover': {
-              borderColor: 'grey.400'
+              borderColor: 'grey.400',
+              bgcolor: 'grey.50'
             },
-            height: '40px'
+            height: '44px',
+            borderRadius: 2,
+            textTransform: 'none',
+            fontSize: '0.9rem'
           }}
-          startIcon={<Sort />}
+          startIcon={<Sort sx={{ fontSize: '1.25rem' }} />}
         >
-          Sırala
+          {filters.sortBy ? (
+            filters.sortBy === 'price:asc' ? 'Artan Fiyat' :
+            filters.sortBy === 'price:desc' ? 'Azalan Fiyat' :
+            filters.sortBy === 'rating:desc' ? 'En Yüksek Puan' :
+            'Sıralama'
+          ) : 'Sırala'}
         </Button>
       </Box>
 

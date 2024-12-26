@@ -9,10 +9,10 @@ export const PRICE_RANGE = {
 
 // Sort Options
 export const SORT_OPTIONS = [
-  { value: 'price:asc', label: 'Price: Low to High' },
-  { value: 'price:desc', label: 'Price: High to Low' },
-  { value: 'rating:asc', label: 'Rating: Low to High' },
-  { value: 'rating:desc', label: 'Rating: High to Low' }
+  { value: 'price:asc', label: 'Artan Fiyat' },
+  { value: 'price:desc', label: 'Azalan Fiyat' },
+  { value: 'rating:desc', label: 'En Yüksek Puan' },
+  { value: 'rating:asc', label: 'En Düşük Puan' }
 ];
 
 // Available Colors
