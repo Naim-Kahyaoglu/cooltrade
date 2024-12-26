@@ -1,0 +1,56 @@
+{
+  "info": {
+    "name": "Order API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"your-email@example.com\",\n    \"password\": \"your-password\"\n}"
+        },
+        "url": {
+          "raw": "https://workintech-fe-ecommerce.onrender.com/login",
+          "protocol": "https",
+          "host": ["workintech-fe-ecommerce", "onrender", "com"],
+          "path": ["login"]
+        }
+      }
+    },
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"address_id\": 1,\n    \"order_date\": \"2024-01-10T14:18:30\",\n    \"card_no\": 1234123412341234,\n    \"card_name\": \"Ali Baş\",\n    \"card_expire_month\": 12,\n    \"card_expire_year\": 2025,\n    \"card_ccv\": 321,\n    \"price\": 1919,\n    \"products\": [\n        {\n            \"product_id\": 12,\n            \"count\": 1,\n            \"detail\": \"açık mavi - xl\"\n        },\n        {\n            \"product_id\": 13,\n            \"count\": 2,\n            \"detail\": \"siyah - lg\"\n        }\n    ]\n}"
+        },
+        "url": {
+          "raw": "https://workintech-fe-ecommerce.onrender.com/order",
+          "protocol": "https",
+          "host": ["workintech-fe-ecommerce", "onrender", "com"],
+          "path": ["order"]
+        }
+      }
+    }
+  ]
+} 
