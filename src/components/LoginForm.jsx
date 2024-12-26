@@ -100,8 +100,13 @@ const LoginForm = () => {
           />
 
           <FormControlLabel
-            control={<Checkbox {...register('rememberMe')} color="primary" />}
-            label="Remember Me"
+            control={
+              <Checkbox
+                {...register('rememberMe')}
+                color="primary"
+              />
+            }
+            label="Beni Hatırla"
             sx={{ mt: 1 }}
           />
 
@@ -109,36 +114,19 @@ const LoginForm = () => {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={isLoading}
             sx={{ mt: 3, mb: 2 }}
+            disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <CircularProgress size={24} sx={{ mr: 1 }} />
-                Logging in...
-              </>
-            ) : (
-              'Login'
-            )}
+            {isLoading ? <CircularProgress size={24} /> : 'Giriş Yap'}
           </Button>
 
-          {error && (
-            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-            <Link to="/forgot-password" style={{ textDecoration: 'none' }}>
-              <Typography color="primary" variant="body2">
-                Forgot Password?
-              </Typography>
-            </Link>
-            <Link to="/signup" style={{ textDecoration: 'none' }}>
-              <Typography color="primary" variant="body2">
-                Don't have an account?
-              </Typography>
-            </Link>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2">
+              Hesabın yok mu?{' '}
+              <Link to="/signup" style={{ color: 'primary.main', textDecoration: 'none' }}>
+                Kayıt Ol
+              </Link>
+            </Typography>
           </Box>
         </Box>
       </Paper>

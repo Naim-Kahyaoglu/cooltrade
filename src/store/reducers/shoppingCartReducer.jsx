@@ -4,15 +4,28 @@ export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
 export const UPDATE_CART_ITEM = 'UPDATE_CART_ITEM';
 export const TOGGLE_CART_ITEM = 'TOGGLE_CART_ITEM';
 export const CLEAR_CART = 'CLEAR_CART';
+export const LOAD_CART = 'LOAD_CART';
+
+// Helper functions
+const saveCartToLocalStorage = (cart) => {
+  localStorage.setItem('shoppingCart', JSON.stringify(cart));
+};
+
+const loadCartFromLocalStorage = () => {
+  const savedCart = localStorage.getItem('shoppingCart');
+  return savedCart ? JSON.parse(savedCart) : [];
+};
 
 // Initial State
 const initialState = {
-  cart: [],
-  isOpen: false  // For dropdown state
+  cart: loadCartFromLocalStorage(),
+  isOpen: false
 };
 
 // Reducer
 const shoppingCartReducer = (state = initialState, action) => {
+  let newState;
+
   switch (action.type) {
     case ADD_TO_CART: {
       const existingItemIndex = state.cart.findIndex(
@@ -26,24 +39,28 @@ const shoppingCartReducer = (state = initialState, action) => {
           ...updatedCart[existingItemIndex],
           count: updatedCart[existingItemIndex].count + 1
         };
-        return { ...state, cart: updatedCart };
+        newState = { ...state, cart: updatedCart };
       } else {
         // New item
-        return {
+        newState = {
           ...state,
           cart: [...state.cart, { product: action.payload, count: 1, checked: true }]
         };
       }
+      saveCartToLocalStorage(newState.cart);
+      return newState;
     }
 
     case REMOVE_FROM_CART:
-      return {
+      newState = {
         ...state,
         cart: state.cart.filter(item => item.product.id !== action.payload)
       };
+      saveCartToLocalStorage(newState.cart);
+      return newState;
 
     case UPDATE_CART_ITEM:
-      return {
+      newState = {
         ...state,
         cart: state.cart.map(item =>
           item.product.id === action.payload.productId
@@ -51,9 +68,11 @@ const shoppingCartReducer = (state = initialState, action) => {
             : item
         )
       };
+      saveCartToLocalStorage(newState.cart);
+      return newState;
 
     case TOGGLE_CART_ITEM:
-      return {
+      newState = {
         ...state,
         cart: state.cart.map(item =>
           item.product.id === action.payload
@@ -61,11 +80,20 @@ const shoppingCartReducer = (state = initialState, action) => {
             : item
         )
       };
+      saveCartToLocalStorage(newState.cart);
+      return newState;
 
     case CLEAR_CART:
+      localStorage.removeItem('shoppingCart');
       return {
         ...state,
         cart: []
+      };
+
+    case LOAD_CART:
+      return {
+        ...state,
+        cart: loadCartFromLocalStorage()
       };
 
     default:
@@ -97,5 +125,21 @@ export const toggleCartItem = (productId) => ({
 export const clearCart = () => ({
   type: CLEAR_CART
 });
+
+export const loadCart = () => ({
+  type: LOAD_CART
+});
+
+// Selectors
+export const selectCartItems = (state) => state.shoppingCart.cart;
+
+export const selectCartTotal = (state) => {
+  return state.shoppingCart.cart.reduce((total, item) => {
+    if (item.checked) {
+      return total + (item.product.price * item.count);
+    }
+    return total;
+  }, 0);
+};
 
 export default shoppingCartReducer;

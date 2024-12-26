@@ -12,32 +12,35 @@ import ContactPage from './pages/ContactPage';
 import CheckoutPage from './pages/CheckoutPage';
 import TeamPage from './pages/TeamPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AuthProvider from './components/AuthProvider';
 
 function App() {
   return (
-    <div>
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/shop" element={<ShopPage />} />
-        <Route path="/shop/:gender/:categoryName/:categoryId" element={<ShopPage />} />
-        <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" element={<ProductDetailPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/about" element={<AboutUsPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/team" element={<TeamPage />} />
-        <Route 
-          path="/checkout" 
-          element={
-            <ProtectedRoute>
-              <CheckoutPage />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
-      <Toaster position="bottom-right" />
-    </div>
+    <AuthProvider>
+      <div>
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/shop/:gender/:categoryName/:categoryId" element={<ShopPage />} />
+          <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" element={<ProductDetailPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/team" element={<TeamPage />} />
+          <Route 
+            path="/checkout" 
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+        <Toaster position="bottom-right" />
+      </div>
+    </AuthProvider>
   );
 }
 
