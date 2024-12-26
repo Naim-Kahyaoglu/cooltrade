@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { logoutUser } from '../store/userSlice';
+import { logout } from '../store/userSlice';
 import CartDropdown from '../components/CartDropdown';
 import {
   Box,
@@ -17,7 +17,7 @@ const Header = ({ user, dispatch }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    dispatch(logoutUser());
+    dispatch(logout());
     navigate('/');
     toast.success('You logged out successfully!', {
       position: "top-right",
