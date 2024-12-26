@@ -1,6 +1,18 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../utils/axios';
 
+const fetchProduct = createAsyncThunk(
+  'products/fetchProduct',
+  async (productId) => {
+    try {
+      const response = await axios.get(`/products/${productId}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async ({
@@ -49,4 +61,6 @@ export const fetchCategories = createAsyncThunk(
       throw error;
     }
   }
-); 
+);
+
+export { fetchProduct }; 

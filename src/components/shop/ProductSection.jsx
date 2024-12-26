@@ -60,13 +60,13 @@ const ProductSection = ({
               <CardMedia
                 component="img"
                 height="200"
-                image={product.img || shopPageImage}
-                alt={product.title}
+                image={product.images?.[0]?.url || shopPageImage}
+                alt={product.name}
                 sx={{ objectFit: 'cover' }}
               />
               <CardContent sx={{ flexGrow: 1 }}>
                 <Typography gutterBottom variant="h6" component="div">
-                  {product.title}
+                  {product.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   {product.description}
