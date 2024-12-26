@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogTitle,
@@ -16,7 +17,7 @@ import {
   Radio,
   FormControlLabel
 } from '@mui/material';
-import { addAddress, updateAddress, toggleAddressForm } from '../store/addressSlice';
+import { addAddress, updateAddress, toggleAddressForm } from '../store/addressSlice.js';
 
 // Mock city data (you can replace this with actual API data)
 const cities = [
@@ -31,10 +32,11 @@ const initialFormState = {
   city: '',
   district: '',
   neighborhood: '',
-  addressType: 'shipping' // 'shipping' or 'receipt'
+  addressType: 'shipping'
 };
 
 const AddressForm = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAddressFormOpen, editingAddress, isLoading } = useSelector(state => state.address);
   const [formData, setFormData] = useState(initialFormState);
@@ -86,10 +88,16 @@ const AddressForm = () => {
       phone: formData.phone.replace(/\D/g, '') // Remove non-digits
     };
 
-    if (editingAddress) {
-      dispatch(updateAddress({ id: editingAddress.id, ...addressData }));
-    } else {
-      dispatch(addAddress(addressData));
+    try {
+      if (editingAddress) {
+        await dispatch(updateAddress({ id: editingAddress.id, ...addressData })).unwrap();
+      } else {
+        await dispatch(addAddress(addressData)).unwrap();
+      }
+      handleClose();
+      navigate('/checkout'); // Checkout sayfasına yönlendir
+    } catch (error) {
+      console.error('Address save failed:', error);
     }
   };
 

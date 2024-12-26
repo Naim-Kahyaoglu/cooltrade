@@ -10,6 +10,7 @@ import CategorySection from '../components/shop/CategorySection';
 import FilterSection from '../components/shop/FilterSection';
 import SearchAndSort from '../components/shop/SearchAndSort';
 import ProductSection from '../components/shop/ProductSection';
+import OrderSummaryBox from '../components/shop/OrderSummaryBox';
 
 // Redux actions and selectors
 import { fetchCategories, fetchProducts } from '../store/thunks/productThunks';
@@ -109,26 +110,30 @@ const ShopPage = () => {
 
       switch (type) {
         case 'category':
-          newFilters.categoryId = value.toString();
+          newFilters.categoryId = value ? value.toString() : '';
           break;
         case 'search':
-          newFilters.searchTerm = value;
+          newFilters.searchTerm = value || '';
           break;
         case 'sort':
-          newFilters.sortBy = value;
+          newFilters.sortBy = value || '';
           break;
         case 'price':
-          newFilters.priceRange = value;
+          newFilters.priceRange = value || [PRICE_RANGE.min, PRICE_RANGE.max];
           break;
         case 'rating':
-          newFilters.selectedRatings = prev.selectedRatings.includes(value)
-            ? prev.selectedRatings.filter(r => r !== value)
-            : [...prev.selectedRatings, value];
+          newFilters.selectedRatings = value ? (
+            prev.selectedRatings.includes(value)
+              ? prev.selectedRatings.filter(r => r !== value)
+              : [...prev.selectedRatings, value]
+          ) : [];
           break;
         case 'color':
-          newFilters.selectedColors = prev.selectedColors.includes(value)
-            ? prev.selectedColors.filter(c => c !== value)
-            : [...prev.selectedColors, value];
+          newFilters.selectedColors = value ? (
+            prev.selectedColors.includes(value)
+              ? prev.selectedColors.filter(c => c !== value)
+              : [...prev.selectedColors, value]
+          ) : [];
           break;
         default:
           break;
@@ -287,52 +292,8 @@ const ShopPage = () => {
         </Grid>
       </Grid>
 
-      {/* Order Summary Box - Mobile */}
-      {cartItems.length > 0 && (
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1000,
-            bgcolor: 'background.paper',
-            borderTop: '1px solid',
-            borderColor: 'grey.200',
-            display: { xs: 'flex', md: 'none' },
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            px: 2,
-            py: 1,
-            gap: 2
-          }}
-        >
-          <Box>
-            <Typography variant="body2" color="text.secondary">
-              Toplam ({cartItems.length} Ürün)
-            </Typography>
-            <Typography fontWeight={600} color="primary.main" fontSize="1.1rem">
-              {formatPrice(cartTotal >= 150 ? cartTotal : cartTotal + 29.99)}
-            </Typography>
-          </Box>
-          <Button 
-            variant="contained"
-            sx={{ 
-              bgcolor: '#f27a1a',
-              '&:hover': {
-                bgcolor: '#d85a00'
-              },
-              height: '40px',
-              flex: 1,
-              maxWidth: '60%'
-            }}
-            onClick={() => navigate('/checkout')}
-          >
-            Sepeti Onayla
-          </Button>
-        </Paper>
-      )}
+      {/* Order Summary Box */}
+      <OrderSummaryBox />
 
       {/* Mobile Filter Dialog */}
       <Dialog

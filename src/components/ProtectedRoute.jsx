@@ -1,17 +1,18 @@
 import React from 'react';
-import { Route, Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
-  const { token } = useSelector(state => state.user);
+  const { token, isAuthenticated } = useSelector(state => state.user);
 
-  if (!token) {
-    // Redirect to login page with return url
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Eğer kullanıcı giriş yapmışsa direkt içeriği göster
+  if (token || isAuthenticated) {
+    return children;
   }
 
-  return children;
+  // Giriş yapmamışsa login sayfasına yönlendir
+  return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default ProtectedRoute; 

@@ -21,10 +21,15 @@ import {
   MenuItem,
   Select,
   Card,
-  CardContent
+  CardContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton
 } from '@mui/material';
-import { Add as AddIcon, Security as SecurityIcon } from '@mui/icons-material';
-import { toggleAddressForm } from '../store/addressSlice';
+import { Add as AddIcon, Security as SecurityIcon, Close } from '@mui/icons-material';
+import { toggleAddressForm, selectAddresses } from '../store/addressSlice.js';
 import AddressForm from '../components/AddressForm';
 import bonusCardLogo from '../images/bonuscard.jpeg';
 import vakifbankCardLogo from '../images/vakıfbankcard.jpeg';
@@ -74,8 +79,8 @@ const mockAddress = {
 const CheckoutPage = () => {
   const dispatch = useDispatch();
   const cart = useSelector(state => state.shoppingCart.cart);
-  // Using mock address as initial selected address
-  const [selectedShippingAddress] = useState(mockAddress);
+  const addresses = useSelector(state => state.address.addresses);
+  const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [selectedCard, setSelectedCard] = useState('');
   const [use3DSecure, setUse3DSecure] = useState(false);
@@ -87,6 +92,14 @@ const CheckoutPage = () => {
     expiryYear: '',
     cvv: ''
   });
+  const [showAddressSelect, setShowAddressSelect] = useState(false);
+
+  // Adresler yüklendiğinde ilk adresi seç
+  useEffect(() => {
+    if (addresses?.length > 0 && !selectedShippingAddress) {
+      setSelectedShippingAddress(addresses[0]);
+    }
+  }, [addresses, selectedShippingAddress]);
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.count), 0);
@@ -95,6 +108,20 @@ const CheckoutPage = () => {
   const total = subtotal + shipping + freeShippingDiscount;
 
   const handleAddressChange = () => {
+    if (addresses?.length > 0) {
+      setShowAddressSelect(true);
+    } else {
+      dispatch(toggleAddressForm());
+    }
+  };
+
+  const handleAddressSelect = (address) => {
+    setSelectedShippingAddress(address);
+    setShowAddressSelect(false);
+  };
+
+  const handleNewAddress = () => {
+    setShowAddressSelect(false);
     dispatch(toggleAddressForm());
   };
 
@@ -113,8 +140,9 @@ const CheckoutPage = () => {
                 variant="text" 
                 color="primary"
                 onClick={handleAddressChange}
+                startIcon={addresses?.length > 0 ? null : <AddIcon />}
               >
-                Değiştir
+                {addresses?.length > 0 ? 'Değiştir' : 'Yeni Adres Ekle'}
               </Button>
             </Box>
 
@@ -126,16 +154,16 @@ const CheckoutPage = () => {
                 <Typography variant="body2" color="text.secondary" component="div" sx={{ whiteSpace: 'pre-line' }}>
                   {selectedShippingAddress.name} {selectedShippingAddress.surname}
                   {'\n'}
-                  {selectedShippingAddress.neighborhood}, {selectedShippingAddress.district}
+                  {selectedShippingAddress.neighborhood}
                   {'\n'}
-                  {selectedShippingAddress.city}
+                  {selectedShippingAddress.district}, {selectedShippingAddress.city}
                   {'\n'}
                   {selectedShippingAddress.phone}
                 </Typography>
               </Box>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                Henüz adres seçilmedi
+                Henüz adres seçilmedi. Lütfen bir adres ekleyin.
               </Typography>
             )}
           </Paper>
@@ -413,6 +441,73 @@ const CheckoutPage = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Address Selection Dialog */}
+      <Dialog
+        open={showAddressSelect}
+        onClose={() => setShowAddressSelect(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Adres Seçin
+          <IconButton
+            aria-label="close"
+            onClick={() => setShowAddressSelect(false)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {addresses?.map((address) => (
+              <Card
+                key={address.id}
+                variant="outlined"
+                sx={{
+                  cursor: 'pointer',
+                  border: '1px solid',
+                  borderColor: selectedShippingAddress?.id === address.id ? 'primary.main' : 'divider',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    bgcolor: 'action.hover'
+                  }
+                }}
+                onClick={() => handleAddressSelect(address)}
+              >
+                <CardContent>
+                  <Typography variant="subtitle1" component="div" gutterBottom>
+                    {address.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
+                    {address.name} {address.surname}
+                    {'\n'}
+                    {address.neighborhood}
+                    {'\n'}
+                    {address.district}, {address.city}
+                    {'\n'}
+                    {address.phone}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleNewAddress} startIcon={<AddIcon />}>
+            Yeni Adres Ekle
+          </Button>
+          <Button onClick={() => setShowAddressSelect(false)}>
+            Kapat
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Address Form Dialog */}
       <AddressForm />

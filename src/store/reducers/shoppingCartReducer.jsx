@@ -131,14 +131,12 @@ export const loadCart = () => ({
 });
 
 // Selectors
-export const selectCartItems = (state) => state.shoppingCart.cart;
+export const selectCartItems = (state) => state.shoppingCart.cart || [];
 
 export const selectCartTotal = (state) => {
-  return state.shoppingCart.cart.reduce((total, item) => {
-    if (item.checked) {
-      return total + (item.product.price * item.count);
-    }
-    return total;
+  const cart = state.shoppingCart.cart || [];
+  return cart.reduce((total, item) => {
+    return total + (item.product.price * item.count);
   }, 0);
 };
 
