@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { fetchTopCategories } from './thunks/categoryThunks';
 
 // Axios instance
 const axiosInstance = axios.create({
@@ -32,7 +33,7 @@ const initialState = {
 
 // Slice
 const categorySlice = createSlice({
-  name: 'categories',
+  name: 'category',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -43,17 +44,38 @@ const categorySlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.categories = action.payload;
-        // Sort categories by rating and get top 5
-        state.topCategories = [...action.payload]
+        
+        // Top 5 kategorileri seç
+        state.topCategories = action.payload
           .sort((a, b) => b.rating - a.rating)
           .slice(0, 5);
+        
+        // Tüm kategoriler yerine sadece top kategorileri kaydet
+        state.categories = state.topCategories;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      .addCase(fetchTopCategories.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchTopCategories.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.topCategories = action.payload.topCategories;
+        state.topCategoriesTotal = action.payload.total;
+      })
+      .addCase(fetchTopCategories.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Kategoriler yüklenemedi';
+        state.topCategories = [];
       });
-  },
+  }
 });
 
-export default categorySlice.reducer; 
+export const selectTopCategories = (state) => state.category?.topCategories || [];
+export const selectTopCategoriesLoading = (state) => state.category?.isLoading || false;
+export const selectTopCategoriesError = (state) => state.category?.error || null;
+
+export default categorySlice.reducer;

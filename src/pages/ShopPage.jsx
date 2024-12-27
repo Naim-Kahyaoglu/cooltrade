@@ -1,68 +1,78 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Container, Grid, Paper, Typography, Button, Dialog, AppBar, Toolbar, IconButton } from '@mui/material';
-import { Close, FilterList, Sort } from '@mui/icons-material';
+import { useParams } from 'react-router-dom';
 
-// Components
-import TopCategories from '../components/shop/TopCategories';
-import CategorySection from '../components/shop/CategorySection';
-import FilterSection from '../components/shop/FilterSection';
-import SearchAndSort from '../components/shop/SearchAndSort';
-import ProductSection from '../components/shop/ProductSection';
-import OrderSummaryBox from '../components/shop/OrderSummaryBox';
-
-// Redux actions and selectors
-import { fetchCategories, fetchProducts } from '../store/thunks/productThunks';
-import { addToCart } from '../store/reducers/shoppingCartReducer';
 import { 
-  selectCategories, 
-  selectProducts, 
-  selectTotalPages,
-  clearProducts 
-} from '../store/productSlice.js';
-import { selectCartItems, selectCartTotal } from '../store/reducers/shoppingCartReducer';
+  Box, 
+  Typography, 
+  Grid, 
+  Button, 
+  MenuItem,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Chip,
+  Container,
+  TextField,
+  Select,
+  Pagination
+} from '@mui/material';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
-// Constants and utils
-import { ITEMS_PER_PAGE, PRICE_RANGE } from './ShopPage/constants';
-import { getGenderFromCode } from '../utils/genderUtils';
-import { formatPrice } from '../utils/formatUtils';
+import ProductCard from '../components/shop/ProductCard';
+import CategoryChips from '../components/shop/CategoryChips';
+
+import { fetchProducts } from '../store/thunks/productThunks';
+import { fetchCategories } from '../store/categorySlice';
+import { fetchTopCategories } from '../store/thunks/categoryThunks';
+import { addToCart } from '../store/shoppingCartSlice';
+import { 
+  selectProducts,
+  selectCategories, 
+  selectProductStatus,
+  selectTotalProducts,
+  selectTotalPages,
+  selectProductError
+} from '../store/productSlice';
+import { 
+  selectTopCategories, 
+  selectTopCategoriesLoading, 
+  selectTopCategoriesError 
+} from '../store/categorySlice';
+
+// Sıralama seçenekleri
+const sortOptions = [
+  { value: null, label: 'Sıralama Yok' },
+  { value: 'price_asc', label: 'Fiyata Göre Artan' },
+  { value: 'price_desc', label: 'Fiyata Göre Azalan' },
+  { value: 'rating_asc', label: 'Puana Göre Artan' },
+  { value: 'rating_desc', label: 'Puana Göre Azalan' }
+];
 
 const ShopPage = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { gender, type, categoryId } = useParams();
+  const { categoryId } = useParams();
 
   // Redux state
   const categories = useSelector(selectCategories);
   const products = useSelector(selectProducts);
+  const totalProducts = useSelector(selectTotalProducts);
   const totalPages = useSelector(selectTotalPages);
-  const cartItems = useSelector(selectCartItems);
-  const cartTotal = useSelector(selectCartTotal);
+  const topCategories = useSelector(selectTopCategories);
+  const topCategoriesLoading = useSelector(selectTopCategoriesLoading);
+  const topCategoriesError = useSelector(selectTopCategoriesError);
+
+  // Ürünlerin yüklenme durumunu izle
+  const productStatus = useSelector(selectProductStatus);
+
+  // Hata mesajını izle
+  const productError = useSelector(selectProductError);
 
   // Local state
-  const [isLoading, setIsLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    categoryId: categoryId || '',
-    searchTerm: '',
-    sortBy: '',
-    priceRange: [PRICE_RANGE.min, PRICE_RANGE.max],
-    selectedRatings: [],
-    selectedColors: [],
-    page: 1,
-    showMobileFilter: false,
-    showMobileSort: false,
-  });
-
-  // Memoized values
-  const groupedCategories = useMemo(() => {
-    return categories.reduce((acc, category) => {
-      const gender = getGenderFromCode(category.gender);
-      if (!acc[gender]) acc[gender] = [];
-      acc[gender].push(category);
-      return acc;
-    }, {});
-  }, [categories]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState(null);
 
   // Effects
   useEffect(() => {
@@ -70,306 +80,196 @@ const ShopPage = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (gender && type && categoryId) {
-      setFilters(prev => ({ ...prev, categoryId }));
-    }
-  }, [gender, type, categoryId]);
+    dispatch(fetchTopCategories());
+  }, [dispatch]);
 
   useEffect(() => {
-    const fetchFilteredProducts = async () => {
-      setIsLoading(true);
-      try {
-        await dispatch(fetchProducts({
-          categoryId: filters.categoryId,
-          searchTerm: filters.searchTerm,
-          sortBy: filters.sortBy,
-          priceRange: filters.priceRange,
-          ratings: filters.selectedRatings,
-          colors: filters.selectedColors,
-          page: filters.page,
-          limit: ITEMS_PER_PAGE,
-        }));
-      } finally {
-        setIsLoading(false);
-      }
+    // Ürünleri fetch et
+    const params = {
+      category: selectedCategory ? selectedCategory.id : '',
+      searchTerm: searchTerm,
+      sortBy: sortBy,
+      page: currentPage,
+      limit: 25
     };
-
-    fetchFilteredProducts();
-  }, [dispatch, filters]);
+    dispatch(fetchProducts(params));
+  }, [dispatch, selectedCategory, searchTerm, sortBy, currentPage]);
 
   // Event handlers
-  const handleCategoryClick = (gender, type, categoryId) => {
-    navigate(`/shop/${gender}/${type}/${categoryId}`);
-  };
-
-  const handleFilterChange = (type, value) => {
-    dispatch(clearProducts());
-    
-    setFilters(prev => {
-      const newFilters = { ...prev, page: 1 };
-
-      switch (type) {
-        case 'category':
-          newFilters.categoryId = value ? value.toString() : '';
-          break;
-        case 'search':
-          newFilters.searchTerm = value || '';
-          break;
-        case 'sort':
-          newFilters.sortBy = value || '';
-          break;
-        case 'price':
-          newFilters.priceRange = value || [PRICE_RANGE.min, PRICE_RANGE.max];
-          break;
-        case 'rating':
-          newFilters.selectedRatings = value ? (
-            prev.selectedRatings.includes(value)
-              ? prev.selectedRatings.filter(r => r !== value)
-              : [...prev.selectedRatings, value]
-          ) : [];
-          break;
-        case 'color':
-          newFilters.selectedColors = value ? (
-            prev.selectedColors.includes(value)
-              ? prev.selectedColors.filter(c => c !== value)
-              : [...prev.selectedColors, value]
-          ) : [];
-          break;
-        default:
-          break;
-      }
-
-      return newFilters;
-    });
-  };
-
-  const handlePageChange = (page) => {
-    setFilters(prev => ({ ...prev, page }));
-  };
-
   const handleAddToCart = (product) => {
-    dispatch(addToCart(product));
+    dispatch(addToCart({
+      product,
+      count: 1
+    }));
   };
 
-  const handleClearSearch = () => {
-    setFilters(prev => ({ ...prev, searchTerm: '', page: 1 }));
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    // Sayfanın en üstüne kaydır
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSortChange = (event) => {
+    const newSortBy = event.target.value;
+    setSortBy(newSortBy);
+    setCurrentPage(1);
+  };
+
+  const handleCategorySelect = (categoryId) => {
+    const category = topCategories.find((category) => category.id === categoryId);
+    setSelectedCategory(category);
+    dispatch(fetchProducts({
+      category: category,
+      searchTerm: searchTerm,
+      sortBy: sortBy,
+      page: 1,
+      limit: 25
+    }));
+  };
+
+  // Yükleme ve hata durumları için UI bileşenleri
+  const renderContent = () => {
+    if (productStatus === 'loading') {
+      return (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="300px">
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    if (productStatus === 'failed') {
+      return (
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="300px">
+          <ErrorOutlineIcon color="error" sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h6" color="error">
+            {productError || 'Ürünler yüklenemedi'}
+          </Typography>
+        </Box>
+      );
+    }
+
+    if (products.length === 0) {
+      return (
+        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="300px">
+          <Typography variant="h6" color="textSecondary">
+            Hiç ürün bulunamadı
+          </Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Grid container spacing={2}>
+        {products.map((product) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+            <ProductCard 
+              product={product} 
+              onAddToCart={() => handleAddToCart(product)}
+            />
+          </Grid>
+        ))}
+      </Grid>
+    );
+  };
+
+  // Top kategoriler için render
+  const renderTopCategories = () => {
+    if (topCategoriesLoading) {
+      return (
+        <Box display="flex" justifyContent="center" alignItems="center" my={2}>
+          <CircularProgress size={24} />
+        </Box>
+      );
+    }
+
+    if (topCategoriesError || topCategories.length === 0) {
+      return null; // Kategoriler yüklenemezse hiçbir şey gösterme
+    }
+
+    return (
+      <div className="category-chips">
+        {topCategories.map((category) => (
+          <Chip 
+            key={category.id} 
+            label={category.name} 
+            onClick={() => handleCategorySelect(category.id)}
+            color={selectedCategory && selectedCategory.id === category.id ? 'primary' : 'default'}
+            style={{ margin: '0 5px 5px 0' }}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
-    <Container 
-      maxWidth="xl" 
-      sx={{ 
-        pb: { xs: '80px', md: 0 },
-        px: { xs: 1, md: 3 }
-      }}
-    >
-      {/* Top Categories Section */}
-      <Box sx={{ mb: { xs: 1, md: 2 } }}>
-        <TopCategories
-          categories={categories}
-          isLoading={isLoading}
-          onCategoryClick={handleCategoryClick}
-        />
-      </Box>
-
-      {/* Category Section */}
-      <Box sx={{ mb: { xs: 1, md: 2 } }}>
-        <CategorySection groupedCategories={groupedCategories} />
-      </Box>
-
-      {/* Filter Buttons for Mobile */}
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ 
-        display: { xs: 'flex', md: 'none' }, 
-        gap: 1,
-        mb: 1,
-        position: 'sticky',
-        top: 0,
-        bgcolor: 'background.paper',
-        zIndex: 900,
-        py: 1,
-        px: 1,
-        borderBottom: '1px solid',
-        borderColor: 'grey.200'
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 3 
       }}>
-        <Button 
-          variant="outlined" 
-          fullWidth
-          onClick={() => setFilters(prev => ({ ...prev, showMobileFilter: true }))}
-          sx={{ 
-            borderColor: 'grey.300',
-            color: 'text.primary',
-            '&:hover': {
-              borderColor: 'grey.400',
-              bgcolor: 'grey.50'
-            },
-            height: '44px',
-            borderRadius: 2,
-            textTransform: 'none',
-            fontSize: '0.9rem'
-          }}
-          startIcon={<FilterList sx={{ fontSize: '1.25rem' }} />}
-        >
-          {filters.selectedRatings.length > 0 || filters.selectedColors.length > 0 || 
-           filters.priceRange[0] !== PRICE_RANGE.min || filters.priceRange[1] !== PRICE_RANGE.max ? (
-            <Box component="span" sx={{ 
-              bgcolor: 'primary.main',
-              color: 'white',
-              width: 20,
-              height: 20,
-              borderRadius: '50%',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.75rem',
-              ml: 1
-            }}>
-              {filters.selectedRatings.length + filters.selectedColors.length + 
-               (filters.priceRange[0] !== PRICE_RANGE.min || filters.priceRange[1] !== PRICE_RANGE.max ? 1 : 0)}
-            </Box>
-          ) : 'Filtrele'}
-        </Button>
-        <Button 
+        {/* Arama ve Sıralama */}
+        <TextField
+          label="Ürün Ara"
           variant="outlined"
           fullWidth
-          onClick={() => setFilters(prev => ({ ...prev, showMobileSort: true }))}
-          sx={{ 
-            borderColor: 'grey.300',
-            color: 'text.primary',
-            '&:hover': {
-              borderColor: 'grey.400',
-              bgcolor: 'grey.50'
-            },
-            height: '44px',
-            borderRadius: 2,
-            textTransform: 'none',
-            fontSize: '0.9rem'
-          }}
-          startIcon={<Sort sx={{ fontSize: '1.25rem' }} />}
-        >
-          {filters.sortBy ? (
-            filters.sortBy === 'price:asc' ? 'Artan Fiyat' :
-            filters.sortBy === 'price:desc' ? 'Azalan Fiyat' :
-            filters.sortBy === 'rating:desc' ? 'En Yüksek Puan' :
-            'Sıralama'
-          ) : 'Sırala'}
-        </Button>
+          value={searchTerm}
+          onChange={handleSearchChange}
+          sx={{ mr: 2, maxWidth: 300 }}
+        />
+
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel>Sırala</InputLabel>
+          <Select
+            value={sortBy || ''}
+            label="Sırala"
+            onChange={handleSortChange}
+          >
+            {sortOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value || ''}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
 
-      {/* Main Content */}
-      <Grid container spacing={{ xs: 1, md: 3 }}>
-        {/* Filter Section - Desktop Only */}
-        <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
-          <FilterSection
-            filters={{ ...filters, categories }}
-            groupedCategories={groupedCategories}
-            onFilterChange={handleFilterChange}
-            onApplyFilters={() => setFilters(prev => ({ ...prev }))}
-          />
-        </Grid>
+      {/* Top Kategoriler */}
+      <div className="top-categories-container">
+        {renderTopCategories()}
+      </div>
 
-        {/* Products Section */}
-        <Grid item xs={12} md={9}>
-          {/* Desktop Search and Sort */}
-          <Box sx={{ display: { xs: 'none', md: 'block' }, mb: 2 }}>
-            <SearchAndSort
-              searchTerm={filters.searchTerm}
-              sortBy={filters.sortBy}
-              onSearchChange={(value) => handleFilterChange('search', value)}
-              onSortChange={(value) => handleFilterChange('sort', value)}
-              onClearSearch={handleClearSearch}
-            />
-          </Box>
+      {/* Ürünler */}
+      {renderContent()}
 
-          {/* Products Grid */}
-          <ProductSection
-            products={products}
-            isLoading={isLoading}
-            page={filters.page}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            onAddToCart={handleAddToCart}
-          />
-        </Grid>
-      </Grid>
-
-      {/* Order Summary Box */}
-      <OrderSummaryBox />
-
-      {/* Mobile Filter Dialog */}
-      <Dialog
-        fullScreen
-        open={filters.showMobileFilter || false}
-        onClose={() => setFilters(prev => ({ ...prev, showMobileFilter: false }))}
-        sx={{ display: { xs: 'block', md: 'none' } }}
+      {/* Pagination */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          mt: 4, 
+          mb: 2 
+        }}
       >
-        <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary' }}>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              onClick={() => setFilters(prev => ({ ...prev, showMobileFilter: false }))}
-              aria-label="close"
-            >
-              <Close />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6">
-              Filtrele
-            </Typography>
-            <Button 
-              color="primary"
-              onClick={() => {
-                setFilters(prev => ({ ...prev, showMobileFilter: false }));
-              }}
-            >
-              Uygula
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Box sx={{ p: 2 }}>
-          <FilterSection
-            filters={{ ...filters, categories }}
-            groupedCategories={groupedCategories}
-            onFilterChange={handleFilterChange}
-            onApplyFilters={() => {
-              setFilters(prev => ({ ...prev, showMobileFilter: false }));
-            }}
-          />
-        </Box>
-      </Dialog>
-
-      {/* Mobile Sort Dialog */}
-      <Dialog
-        fullScreen
-        open={filters.showMobileSort || false}
-        onClose={() => setFilters(prev => ({ ...prev, showMobileSort: false }))}
-        sx={{ display: { xs: 'block', md: 'none' } }}
-      >
-        <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary' }}>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              onClick={() => setFilters(prev => ({ ...prev, showMobileSort: false }))}
-              aria-label="close"
-            >
-              <Close />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6">
-              Sırala
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Box sx={{ p: 2 }}>
-          <SearchAndSort
-            searchTerm={filters.searchTerm}
-            sortBy={filters.sortBy}
-            onSearchChange={(value) => handleFilterChange('search', value)}
-            onSortChange={(value) => {
-              handleFilterChange('sort', value);
-              setFilters(prev => ({ ...prev, showMobileSort: false }));
-            }}
-            onClearSearch={handleClearSearch}
-          />
-        </Box>
-      </Dialog>
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+          variant="outlined"
+          shape="rounded"
+        />
+      </Box>
     </Container>
   );
 };

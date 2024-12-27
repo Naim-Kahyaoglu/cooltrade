@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../store/userSlice';
 import {
@@ -18,13 +18,24 @@ import {
   Paper
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { toast } from 'react-hot-toast';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { isLoading, error } = useSelector((state) => state.user);
   const [showPassword, setShowPassword] = useState(false);
   
+  // Yönlendirme ve mesaj için state kontrolü
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.error(location.state.message);
+      // Mesajı temizle
+      window.history.replaceState({}, '');
+    }
+  }, [location]);
+
   const {
     register,
     handleSubmit,
@@ -33,13 +44,15 @@ const LoginForm = () => {
 
   const onSubmit = async (data) => {
     try {
-      await dispatch(loginUser({
+      const response = await dispatch(loginUser({
         email: data.email,
         password: data.password,
         rememberMe: data.rememberMe
       })).unwrap();
       
-      navigate('/');
+      // Eğer önceden bir yönlendirme sayfası varsa oraya git
+      const from = location.state?.from || '/';
+      navigate(from);
     } catch (error) {
       // Error is handled by the reducer
       console.error('Login failed:', error);

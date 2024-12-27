@@ -1,18 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 // Axios instance
-const axiosInstance = axios.create({
-  baseURL: 'https://workintech-fe-ecommerce.onrender.com',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const axiosInstance = axios;
 
 // Set token in axios headers
 export const setAuthToken = (token) => {
   if (token) {
-    axiosInstance.defaults.headers.common['Authorization'] = token;
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     localStorage.setItem('token', token);
   } else {
     delete axiosInstance.defaults.headers.common['Authorization'];
@@ -44,13 +39,22 @@ export const verifyToken = createAsyncThunk(
         throw new Error('No token found');
       }
       
-      const response = await axiosInstance.get('/verify');
+      // Token doğrulama için alternatif bir yaklaşım
+      const response = await axios.get('/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
       return response.data;
     } catch (error) {
+      console.error('Token Verification Error:', error.response || error);
+      
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         setAuthToken(null);
       }
+      
       return rejectWithValue(error.response?.data?.message || 'Token verification failed');
     }
   }
@@ -63,9 +67,15 @@ export const loginUser = createAsyncThunk(
       const response = await axiosInstance.post('/login', { email, password });
       const { token, ...userData } = response.data;
       
+      console.log('Login Response Token:', token);
+      
+      // Token'ı doğru şekilde kaydet
+      localStorage.setItem('token', token);
       setAuthToken(token);
+      
       return { user: userData, token };
     } catch (error) {
+      console.error('Login Error:', error);
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }
@@ -160,4 +170,4 @@ export const selectIsAuthenticated = (state) => state.user.isAuthenticated;
 export const selectIsLoading = (state) => state.user.isLoading;
 export const selectError = (state) => state.user.error;
 
-export default userSlice.reducer; 
+export default userSlice.reducer;

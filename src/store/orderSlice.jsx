@@ -18,7 +18,13 @@ export const createOrder = createAsyncThunk(
       
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to create order');
+      console.error('Order creation error:', error);
+      
+      if (error.response?.status === 401) {
+        toast.error('Oturum açmanız gerekiyor.');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to create order');
+      }
       return rejectWithValue(error.response?.data?.message || 'Failed to create order');
     }
   }

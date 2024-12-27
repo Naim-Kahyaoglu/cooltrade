@@ -30,9 +30,13 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Security as SecurityIcon, Close } from '@mui/icons-material';
 import { toggleAddressForm, selectAddresses } from '../store/addressSlice.js';
+import { createOrder } from '../store/orderSlice.jsx';
+import { verifyToken } from '../store/userSlice';
 import AddressForm from '../components/AddressForm';
 import bonusCardLogo from '../images/bonuscard.jpeg';
 import vakifbankCardLogo from '../images/vakıfbankcard.jpeg';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 // Mock saved cards
 const savedCards = [
@@ -78,8 +82,11 @@ const mockAddress = {
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const cart = useSelector(state => state.shoppingCart.cart);
   const addresses = useSelector(state => state.address.addresses);
+  const isAuthenticated = useSelector(state => state.user.isAuthenticated);
+
   const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [selectedCard, setSelectedCard] = useState('');
@@ -93,6 +100,19 @@ const CheckoutPage = () => {
     cvv: ''
   });
   const [showAddressSelect, setShowAddressSelect] = useState(false);
+
+  // Checkout sayfasına giriş kontrolü
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error('Ödeme yapabilmek için lütfen giriş yapın.');
+      navigate('/login', { 
+        state: { 
+          from: '/checkout',
+          message: 'Ödeme yapabilmek için lütfen giriş yapın.'
+        } 
+      });
+    }
+  }, [isAuthenticated, navigate]);
 
   // Adresler yüklendiğinde ilk adresi seç
   useEffect(() => {
@@ -124,6 +144,98 @@ const CheckoutPage = () => {
     setShowAddressSelect(false);
     dispatch(toggleAddressForm());
   };
+
+  const handlePayment = async () => {
+    // Token kontrolü
+    const token = localStorage.getItem('token');
+    
+    if (!token || !isAuthenticated) {
+      toast.error('Oturum açmanız gerekiyor.');
+      navigate('/login', { 
+        state: { 
+          from: '/checkout',
+          message: 'Ödeme yapabilmek için lütfen giriş yapın.'
+        } 
+      });
+      return;
+    }
+
+    // Validasyon kontrolleri
+    if (!selectedShippingAddress) {
+      toast.error('Lütfen bir teslimat adresi seçin.');
+      return;
+    }
+
+    if (!acceptTerms) {
+      toast.error('Lütfen ödeme şartlarını kabul edin.');
+      return;
+    }
+
+    // Kart bilgileri kontrolü
+    const cardData = showNewCardForm ? {
+      card_no: newCardData.cardNumber.replace(/\s/g, ''),
+      card_name: newCardData.cardName,
+      card_expire_month: newCardData.expiryMonth,
+      card_expire_year: newCardData.expiryYear,
+      card_ccv: newCardData.cvv
+    } : savedCards.find(card => card.id === selectedCard);
+
+    if (!cardData) {
+      toast.error('Lütfen bir ödeme kartı seçin veya yeni kart bilgilerini doldurun.');
+      return;
+    }
+
+    // Sipariş verisi hazırlama
+    const orderData = {
+      address_id: selectedShippingAddress.id,
+      order_date: new Date().toISOString(),
+      card_no: cardData.card_no || cardData.number.replace(/\s/g, ''),
+      card_name: cardData.card_name || cardData.name,
+      card_expire_month: cardData.card_expire_month || cardData.expiry.split('/')[0],
+      card_expire_year: cardData.card_expire_year || cardData.expiry.split('/')[1],
+      card_ccv: cardData.card_ccv || '000', // Güvenlik için varsayılan
+      price: total,
+      products: cart.map(item => ({
+        product_id: item.product.id,
+        count: item.count,
+        detail: `${item.product.color} - ${item.product.size}`
+      }))
+    };
+
+    // Sipariş oluşturma
+    dispatch(createOrder(orderData))
+      .then((response) => {
+        toast.success('Siparişiniz başarıyla oluşturuldu!');
+        navigate('/order-success');
+      })
+      .catch((error) => {
+        if (error.response?.status === 401) {
+          toast.error('Sipariş oluşturmak için giriş yapmanız gerekiyor.');
+          navigate('/login', { 
+            state: { 
+              from: '/checkout',
+              message: 'Sipariş oluşturmak için lütfen giriş yapın.'
+            } 
+          });
+        } else {
+          toast.error('Sipariş oluşturulurken bir hata oluştu.');
+          console.error('Order creation error:', error);
+        }
+      });
+  };
+
+  const paymentButton = (
+    <Button
+      fullWidth
+      variant="contained"
+      color="primary"
+      size="large"
+      onClick={handlePayment}
+      disabled={!selectedShippingAddress || !acceptTerms || cart.length === 0}
+    >
+      Ödemeyi Tamamla
+    </Button>
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -429,15 +541,7 @@ const CheckoutPage = () => {
               />
             </Box>
 
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              size="large"
-              disabled={!acceptTerms || !selectedCard}
-            >
-              Ödeme Yap
-            </Button>
+            {paymentButton}
           </Paper>
         </Grid>
       </Grid>
@@ -515,4 +619,4 @@ const CheckoutPage = () => {
   );
 };
 
-export default CheckoutPage; 
+export default CheckoutPage;
