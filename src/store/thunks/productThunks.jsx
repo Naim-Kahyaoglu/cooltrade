@@ -51,3 +51,4 @@ export const fetchProduct = (productId) => async (dispatch) => {
     dispatch(setFetchState(FETCH_STATES.FAILED));
   }
 };
+

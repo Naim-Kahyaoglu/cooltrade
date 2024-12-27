@@ -84,3 +84,4 @@ export const selectCartItems = (state) => state.shoppingCart.cart;
 export const selectCartTotal = (state) => state.shoppingCart.total;
 
 export default shoppingCartSlice.reducer;
+

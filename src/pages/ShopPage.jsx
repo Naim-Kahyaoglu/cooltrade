@@ -23,22 +23,14 @@ import ProductCard from '../components/shop/ProductCard';
 import CategoryChips from '../components/shop/CategoryChips';
 
 import { fetchProducts } from '../store/thunks/productThunks';
-import { fetchCategories } from '../store/categorySlice';
-import { fetchTopCategories } from '../store/thunks/categoryThunks';
 import { addToCart } from '../store/shoppingCartSlice';
 import { 
   selectProducts,
-  selectCategories, 
   selectProductStatus,
   selectTotalProducts,
   selectTotalPages,
   selectProductError
 } from '../store/productSlice';
-import { 
-  selectTopCategories, 
-  selectTopCategoriesLoading, 
-  selectTopCategoriesError 
-} from '../store/categorySlice';
 
 // Sıralama seçenekleri
 const sortOptions = [
@@ -54,13 +46,9 @@ const ShopPage = () => {
   const { categoryId } = useParams();
 
   // Redux state
-  const categories = useSelector(selectCategories);
   const products = useSelector(selectProducts);
   const totalProducts = useSelector(selectTotalProducts);
   const totalPages = useSelector(selectTotalPages);
-  const topCategories = useSelector(selectTopCategories);
-  const topCategoriesLoading = useSelector(selectTopCategoriesLoading);
-  const topCategoriesError = useSelector(selectTopCategoriesError);
 
   // Ürünlerin yüklenme durumunu izle
   const productStatus = useSelector(selectProductStatus);
@@ -70,30 +58,20 @@ const ShopPage = () => {
 
   // Local state
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState(null);
 
   // Effects
   useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(fetchTopCategories());
-  }, [dispatch]);
-
-  useEffect(() => {
     // Ürünleri fetch et
     const params = {
-      category: selectedCategory ? selectedCategory.id : '',
       searchTerm: searchTerm,
       sortBy: sortBy,
       page: currentPage,
       limit: 25
     };
     dispatch(fetchProducts(params));
-  }, [dispatch, selectedCategory, searchTerm, sortBy, currentPage]);
+  }, [dispatch, searchTerm, sortBy, currentPage]);
 
   // Event handlers
   const handleAddToCart = (product) => {
@@ -101,10 +79,6 @@ const ShopPage = () => {
       product,
       count: 1
     }));
-  };
-
-  const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
   };
 
   const handleSearchChange = (event) => {
@@ -122,18 +96,6 @@ const ShopPage = () => {
     const newSortBy = event.target.value;
     setSortBy(newSortBy);
     setCurrentPage(1);
-  };
-
-  const handleCategorySelect = (categoryId) => {
-    const category = topCategories.find((category) => category.id === categoryId);
-    setSelectedCategory(category);
-    dispatch(fetchProducts({
-      category: category,
-      searchTerm: searchTerm,
-      sortBy: sortBy,
-      page: 1,
-      limit: 25
-    }));
   };
 
   // Yükleme ve hata durumları için UI bileşenleri
@@ -181,35 +143,6 @@ const ShopPage = () => {
     );
   };
 
-  // Top kategoriler için render
-  const renderTopCategories = () => {
-    if (topCategoriesLoading) {
-      return (
-        <Box display="flex" justifyContent="center" alignItems="center" my={2}>
-          <CircularProgress size={24} />
-        </Box>
-      );
-    }
-
-    if (topCategoriesError || topCategories.length === 0) {
-      return null; // Kategoriler yüklenemezse hiçbir şey gösterme
-    }
-
-    return (
-      <div className="category-chips">
-        {topCategories.map((category) => (
-          <Chip 
-            key={category.id} 
-            label={category.name} 
-            onClick={() => handleCategorySelect(category.id)}
-            color={selectedCategory && selectedCategory.id === category.id ? 'primary' : 'default'}
-            style={{ margin: '0 5px 5px 0' }}
-          />
-        ))}
-      </div>
-    );
-  };
-
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ 
@@ -243,11 +176,6 @@ const ShopPage = () => {
           </Select>
         </FormControl>
       </Box>
-
-      {/* Top Kategoriler */}
-      <div className="top-categories-container">
-        {renderTopCategories()}
-      </div>
 
       {/* Ürünler */}
       {renderContent()}

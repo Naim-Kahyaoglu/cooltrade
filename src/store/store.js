@@ -4,7 +4,6 @@ import shoppingCartReducer from './shoppingCartSlice';
 import addressReducer from './addressSlice';
 import orderReducer from './orderSlice';
 import productReducer from './productSlice';
-import categoryReducer from './categorySlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,8 +11,7 @@ export const store = configureStore({
     shoppingCart: shoppingCartReducer,
     address: addressReducer,
     order: orderReducer,
-    products: productReducer,
-    categories: categoryReducer
+    products: productReducer
   },
   middleware: (getDefaultMiddleware) => 
     getDefaultMiddleware({

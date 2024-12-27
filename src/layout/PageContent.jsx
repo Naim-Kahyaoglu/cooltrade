@@ -10,3 +10,4 @@ const PageContent = ({ children }) => {
 };
 
 export default PageContent;
+

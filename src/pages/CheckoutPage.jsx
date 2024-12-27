@@ -29,8 +29,8 @@ import {
   IconButton
 } from '@mui/material';
 import { Add as AddIcon, Security as SecurityIcon, Close } from '@mui/icons-material';
-import { toggleAddressForm, selectAddresses } from '../store/addressSlice.js';
-import { createOrder } from '../store/orderSlice.jsx';
+import { toggleAddressForm, selectAddresses } from '../store/addressSlice';
+import { createOrder } from '../store/orderSlice';
 import { verifyToken } from '../store/userSlice';
 import AddressForm from '../components/AddressForm';
 import bonusCardLogo from '../images/bonuscard.jpeg';

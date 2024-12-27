@@ -160,3 +160,4 @@ const ProductCard = ({ product, gender, categoryName, categoryId }) => {
 };
 
 export default ProductCard;
+

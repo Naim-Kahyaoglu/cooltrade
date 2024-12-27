@@ -17,7 +17,7 @@ import {
   Radio,
   FormControlLabel
 } from '@mui/material';
-import { addAddress, updateAddress, toggleAddressForm } from '../store/addressSlice.js';
+import { addAddress, updateAddress, toggleAddressForm } from '../store/addressSlice';
 
 // Mock city data (you can replace this with actual API data)
 const cities = [

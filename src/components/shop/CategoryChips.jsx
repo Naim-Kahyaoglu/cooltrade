@@ -40,3 +40,4 @@ const CategoryChips = ({ categories = [], onCategoryClick, selectedCategory }) =
 };
 
 export default CategoryChips;
+

@@ -141,3 +141,4 @@ const Slider = ({ images }) => {
 
 export default Slider;
 
+

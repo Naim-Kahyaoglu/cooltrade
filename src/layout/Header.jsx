@@ -105,3 +105,4 @@ const Header = ({ user, dispatch }) => {
 export default connect(state => ({
   user: state.user
 }))(Header);
+
