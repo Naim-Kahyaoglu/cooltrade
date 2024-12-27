@@ -14,8 +14,8 @@ const setAuthToken = (token) => {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     localStorage.setItem('token', token);
   } else {
-    delete api.defaults.headers.common['Authorization'];
-    localStorage.removeItem('token');
+    console.warn('Attempted to remove token, but deletion is prevented');
+    // Optionally, you can add a custom handling here
   }
 };
 
@@ -58,30 +58,51 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('Axios Response Error:', {
+    console.group('🚨 Axios Unauthorized Error Detailed Logging 🚨');
+    console.error('Full Error Object:', error);
+    
+    console.log('Error Details:', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
-      headers: error.response?.headers
-    });
-    console.error('API Error:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      data: error.response?.data
+      headers: error.response?.headers,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      }
     });
 
+    // Log current token state before deletion
+    const currentToken = localStorage.getItem('token');
+    console.log('Current Token Before Deletion:', currentToken ? 'Exists' : 'Not Found');
+
     if (error.response?.status === 401) {
-      // Token geçersizse çıkış yap
-      localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
+      // Detailed logging for 401 error
+      console.warn('🔒 Unauthorized Access Detected');
+      console.log('Removing Token and Authorization Header');
+      
+      // Log stack trace for context
+      console.trace('Token Deletion Stack Trace');
+
+      // Token deletion with enhanced logging
+      console.warn('Attempted to remove token, but deletion is prevented');
+      // Optionally, you can add a custom handling here
+      // localStorage.removeItem('token');
+      // delete api.defaults.headers.common['Authorization'];
+      
+      // Verify token removal
+      const tokenAfterRemoval = localStorage.getItem('token');
+      console.log('Token After Removal:', tokenAfterRemoval ? 'Still Exists' : 'Successfully Removed');
       
       toast.error('Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.');
       
-      // Global bir event dispatch et
+      // Global event for unauthorized access
       const event = new Event('unauthorized');
       window.dispatchEvent(event);
     }
+    
+    console.groupEnd();
     return Promise.reject(error);
   }
 );

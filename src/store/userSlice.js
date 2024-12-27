@@ -51,8 +51,8 @@ export const verifyToken = createAsyncThunk(
       console.error('Token Verification Error:', error.response || error);
       
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        setAuthToken(null);
+        // Log the error instead of removing the token
+        console.warn('Token verification failed, but token will not be deleted', error);
       }
       
       return rejectWithValue(error.response?.data?.message || 'Token verification failed');
@@ -101,8 +101,9 @@ const userSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
-      setAuthToken(null);
+      // Log the logout attempt instead of removing the token
+      console.warn('Logout attempted, but token will not be deleted');
+      // Optionally, you can add custom logout handling here
     },
     clearError: (state) => {
       state.error = null;
