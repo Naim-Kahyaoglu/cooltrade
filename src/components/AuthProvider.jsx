@@ -1,30 +1,24 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { verifyToken, selectIsAuthenticated, setAuthToken } from '../store/userSlice';
-import { loadCart } from '../store/reducers/shoppingCartReducer';
+import { verifyToken, selectIsAuthenticated, selectCurrentUser } from '../store/userSlice';
 
 const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectCurrentUser);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        setAuthToken(token);
-        try {
-          await dispatch(verifyToken()).unwrap();
-          dispatch(loadCart());
-        } catch (error) {
-          console.error('Token verification failed:', error);
-        }
-      }
-    };
-
-    initializeAuth();
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(verifyToken());
+    }
   }, [dispatch]);
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+    </>
+  );
 };
 
-export default AuthProvider; 
+export default AuthProvider;

@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
+// Create an axios instance with a base configuration
 const api = axios.create({
   baseURL: 'https://workintech-fe-ecommerce.onrender.com',
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -19,7 +21,7 @@ const setAuthToken = (token) => {
   }
 };
 
-// Request interceptor for adding auth token
+// Request interceptor to add token to requests
 api.interceptors.request.use(
   (config) => {
     console.log('Axios Request Config:', {
@@ -42,7 +44,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling errors
+// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => {
     console.log('Axios Response:', {

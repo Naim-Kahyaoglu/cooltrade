@@ -1,5 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from '../utils/axios';
 import { fetchProducts, fetchCategories } from './thunks/productThunks';
+
+// Async thunk to fetch product details
+export const fetchProductDetails = createAsyncThunk(
+  'product/fetchProductDetails',
+  async (productId, { rejectWithValue }) => {
+    try {
+      console.log('Fetching product details for ID:', productId);  // Debug log
+      const response = await axios.get(`/products/${productId}`);
+      console.log('Product details response:', response.data);  // Debug log
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching product details:', error);  // Debug log
+      return rejectWithValue(error.response?.data || 'Ürün detayları alınamadı');
+    }
+  }
+);
 
 const initialState = {
   products: [],
@@ -7,7 +24,10 @@ const initialState = {
   totalProducts: 0,
   totalPages: 0,
   status: 'idle',
-  error: null
+  error: null,
+  currentProduct: null,
+  loading: false,
+  errorDetails: null
 };
 
 const productSlice = createSlice({
@@ -54,6 +74,23 @@ const productSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload || 'Kategoriler yüklenemedi';
         state.categories = [];
+      })
+
+      // Fetch Product Details
+      .addCase(fetchProductDetails.pending, (state) => {
+        state.loading = true;
+        state.errorDetails = null;
+        state.currentProduct = null;
+      })
+      .addCase(fetchProductDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentProduct = action.payload;
+        state.errorDetails = null;
+      })
+      .addCase(fetchProductDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.errorDetails = action.payload;
+        state.currentProduct = null;
       });
   }
 });
@@ -67,5 +104,8 @@ export const selectTotalProducts = (state) => state.products?.totalProducts || 0
 export const selectTotalPages = (state) => state.products?.totalPages || 0;
 export const selectProductStatus = (state) => state.products?.status || 'idle';
 export const selectProductError = (state) => state.products?.error || null;
+export const selectCurrentProduct = (state) => state.products?.currentProduct || null;
+export const selectLoading = (state) => state.products?.loading || false;
+export const selectErrorDetails = (state) => state.products?.errorDetails || null;
 
 export default productSlice.reducer;
