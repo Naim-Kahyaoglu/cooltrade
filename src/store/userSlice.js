@@ -36,10 +36,10 @@ export const verifyToken = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('No token found');
+        // Instead of throwing an error, just return null
+        return null;
       }
       
-      // Token doğrulama için alternatif bir yaklaşım
       const response = await axios.get('/user', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -48,14 +48,11 @@ export const verifyToken = createAsyncThunk(
       
       return response.data;
     } catch (error) {
-      console.error('Token Verification Error:', error.response || error);
+      // Log the error but do not automatically log out
+      console.warn('Token verification encountered an issue:', error);
       
-      if (error.response?.status === 401) {
-        // Log the error instead of removing the token
-        console.warn('Token verification failed, but token will not be deleted', error);
-      }
-      
-      return rejectWithValue(error.response?.data?.message || 'Token verification failed');
+      // Return null instead of rejecting, preventing automatic logout
+      return null;
     }
   }
 );
@@ -98,12 +95,11 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
+      localStorage.removeItem('token');
+      setAuthToken(null);
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      // Log the logout attempt instead of removing the token
-      console.warn('Logout attempted, but token will not be deleted');
-      // Optionally, you can add custom logout handling here
     },
     clearError: (state) => {
       state.error = null;
@@ -118,18 +114,15 @@ const userSlice = createSlice({
       })
       .addCase(verifyToken.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
-        state.isAuthenticated = true;
-        state.token = localStorage.getItem('token');
+        if (action.payload) {
+          state.user = action.payload;
+          state.isAuthenticated = true;
+          state.token = localStorage.getItem('token');
+        }
       })
       .addCase(verifyToken.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-        state.isAuthenticated = false;
-        state.user = null;
-        state.token = null;
-        localStorage.removeItem('token');
-        setAuthToken(null);
       })
       
       // Login

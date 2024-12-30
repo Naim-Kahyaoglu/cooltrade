@@ -14,7 +14,8 @@ import {
   DialogActions
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
-import { fetchOrders } from '../store/orderSlice';
+import { fetchOrders, createOrder } from '../store/orderSlice';
+import { useNavigate } from 'react-router-dom';
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -78,6 +79,7 @@ const OrdersPage = () => {
   const orders = useSelector(state => state.order.orders);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchOrders());
@@ -100,33 +102,49 @@ const OrdersPage = () => {
       </Typography>
 
       {orders.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
-          Henüz hiç siparişiniz bulunmamaktadır.
-        </Typography>
+        <Paper elevation={3} sx={{ p: 3, textAlign: 'center', mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Henüz hiç siparişiniz bulunmamaktadır
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            sx={{ mt: 2 }}
+            onClick={() => {
+              navigate('/shop');
+            }}
+          >
+            İlk Siparişini Ver
+          </Button>
+        </Paper>
       ) : (
-        orders.map((order, index) => (
-          <Paper key={index} elevation={2} sx={{ p: 2, mb: 2 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle1">
-                  Sipariş Tarihi: {formatDate(order.order_date)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Toplam Tutar: {order.price} TL
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6} sx={{ textAlign: 'right' }}>
-                <Button 
-                  variant="outlined" 
-                  color="primary" 
-                  onClick={() => handleOrderDetail(order)}
-                >
-                  Detayları Görüntüle
-                </Button>
-              </Grid>
+        <Grid container spacing={3}>
+          {orders.map((order, index) => (
+            <Grid item xs={12} key={index}>
+              <Paper elevation={2} sx={{ p: 2 }}>
+                <Grid container alignItems="center" spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="subtitle1">
+                      Sipariş Tarihi: {formatDate(order.order_date)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Toplam Tutar: {order.price} TL
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} sx={{ textAlign: 'right' }}>
+                    <Button 
+                      variant="outlined" 
+                      color="primary" 
+                      onClick={() => handleOrderDetail(order)}
+                    >
+                      Sipariş Detayları
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Paper>
             </Grid>
-          </Paper>
-        ))
+          ))}
+        </Grid>
       )}
 
       <OrderDetailDialog 
@@ -139,4 +157,3 @@ const OrdersPage = () => {
 };
 
 export default OrdersPage;
-

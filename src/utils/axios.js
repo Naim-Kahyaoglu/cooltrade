@@ -78,28 +78,15 @@ api.interceptors.response.use(
     console.log('Current Token Before Deletion:', currentToken ? 'Exists' : 'Not Found');
 
     if (error.response?.status === 401) {
-      // Detailed logging for 401 error
-      console.warn('🔒 Unauthorized Access Detected');
-      console.log('Removing Token and Authorization Header');
+      // Log the unauthorized access without taking action
+      console.warn('🔒 Unauthorized Access Detected, but no automatic logout');
       
-      // Log stack trace for context
-      console.trace('Token Deletion Stack Trace');
-
-      // Token deletion with enhanced logging
-      console.warn('Attempted to remove token, but deletion is prevented');
-      // Optionally, you can add a custom handling here
-      // localStorage.removeItem('token');
-      // delete api.defaults.headers.common['Authorization'];
+      // Remove any automatic logout mechanisms
+      toast.error('Authentication required for this action');
       
-      // Verify token removal
-      const tokenAfterRemoval = localStorage.getItem('token');
-      console.log('Token After Removal:', tokenAfterRemoval ? 'Still Exists' : 'Successfully Removed');
-      
-      toast.error('Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.');
-      
-      // Global event for unauthorized access
-      const event = new Event('unauthorized');
-      window.dispatchEvent(event);
+      // DO NOT dispatch unauthorized event
+      // DO NOT automatically log out
+      return Promise.reject(error);
     }
     
     console.groupEnd();

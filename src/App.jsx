@@ -23,17 +23,10 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleUnauthorized = () => {
-      dispatch(logout());
-      navigate('/login');
-    };
-
-    window.addEventListener('unauthorized', handleUnauthorized);
-
-    return () => {
-      window.removeEventListener('unauthorized', handleUnauthorized);
-    };
-  }, [dispatch, navigate]);
+    // Removed automatic logout mechanism
+    // Users can only log out via logout button
+    return () => {};
+  }, []);
 
   return (
     <AuthProvider>
@@ -58,6 +51,14 @@ function App() {
             } 
           />
           <Route 
+            path="/order-success" 
+            element={
+              <ProtectedRoute>
+                <OrderSuccessPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/orders" 
             element={
               <ProtectedRoute>
@@ -65,7 +66,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route path="/order-success" element={<OrderSuccessPage />} />
         </Routes>
         <Toaster position="bottom-right" />
       </div>

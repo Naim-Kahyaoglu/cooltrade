@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Container, 
   Typography, 
@@ -9,11 +9,40 @@ import {
 } from '@mui/material';
 import { Check as CheckIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearCart } from '../store/cartSlice';
+import { createOrder } from '../store/orderSlice';
 
 const OrderSuccessPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const currentOrder = useSelector(state => state.order.currentOrder);
+  
+  // Safely access cart items with optional chaining and default empty array
+  const cartItems = useSelector(state => state.cart?.items || []);
+
+  useEffect(() => {
+    // If there are cart items, create an order and clear the cart
+    if (cartItems.length > 0) {
+      const orderData = {
+        products: cartItems.map(item => ({
+          detail: item.name || item.product?.name || 'Ürün',
+          count: item.quantity || item.count || 1,
+          price: (item.price || item.product?.price || 0) * (item.quantity || item.count || 1)
+        })),
+        price: cartItems.reduce((total, item) => 
+          total + ((item.price || item.product?.price || 0) * (item.quantity || item.count || 1)), 
+          0),
+        order_date: new Date().toISOString(),
+        card_name: "Banka Kartı",
+        card_no: "4444 5555 6666 7777"
+      };
+
+      // Dispatch create order and clear cart
+      dispatch(createOrder(orderData));
+      dispatch(clearCart());
+    }
+  }, [cartItems, dispatch]);
 
   return (
     <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
@@ -82,4 +111,3 @@ const OrderSuccessPage = () => {
 };
 
 export default OrderSuccessPage;
-
