@@ -1,9 +1,9 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { logout } from '../store/userSlice';
+import { logout, selectCurrentUser, selectIsAuthenticated } from '../store/userSlice';
 import CartDropdown from '../components/CartDropdown';
 import {
   Box,
@@ -13,8 +13,11 @@ import {
   Button,
 } from '@mui/material';
 
-const Header = ({ user, dispatch }) => {
+const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -70,24 +73,24 @@ const Header = ({ user, dispatch }) => {
         {/* Right Side Icons */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Welcome Message */}
-          {user?.user && (
+          {user && (
             <Typography variant="body2" sx={{ mr: 2 }}>
-              Welcome, {user.user.name}
+              Welcome, {user.name}
             </Typography>
           )}
 
           {/* Login/Logout */}
-          {user?.user ? (
-            <Button 
+          {isAuthenticated ? (
+            <Button
               color="inherit"
               onClick={handleLogout}
             >
               Logout
             </Button>
           ) : (
-            <Button 
+            <Button
               color="inherit"
-              component={Link} 
+              component={Link}
               to="/login"
             >
               Login
@@ -102,7 +105,5 @@ const Header = ({ user, dispatch }) => {
   );
 };
 
-export default connect(state => ({
-  user: state.user
-}))(Header);
+export default Header;
 

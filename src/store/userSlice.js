@@ -33,7 +33,7 @@ export const verifyToken = createAsyncThunk(
       }
 
       // Modify this endpoint based on your actual backend token verification route
-      const response = await axios.get('/verify-token', {
+      const response = await axios.get('/verify', {
         headers: { 
           'Authorization': `Bearer ${token}` 
         }
